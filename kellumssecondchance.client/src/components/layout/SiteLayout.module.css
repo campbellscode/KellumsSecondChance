@@ -1,0 +1,38 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.main {
+  flex: 1;
+  padding-block-start: var(--header-h);
+}
+
+.main:focus { outline: none; }
+
+.routeFallback {
+  padding-block: clamp(4rem, 10vw, 8rem);
+}
+
+.skipLink {
+  position: fixed;
+  inset-block-start: 0.75rem;
+  inset-inline-start: 0.75rem;
+  z-index: var(--z-skiplink);
+  padding: 0.85rem 1.25rem;
+  font-weight: 600;
+  color: var(--color-on-accent);
+  background-color: var(--color-accent);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  translate: 0 -180%;
+  transition: translate var(--dur) var(--ease-out);
+}
+
+.skipLink:focus-visible { translate: 0 0; }
+
+/* Room for the mobile action bar so it never covers the footer's last line. */
+@media (max-width: 47.999rem) {
+  .shell { padding-block-end: 4.25rem; }
+}

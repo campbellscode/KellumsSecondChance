@@ -1,0 +1,99 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin: 0;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+  break-inside: avoid;
+  min-width: 0;
+}
+
+.card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.mark {
+  position: absolute;
+  inset-block-start: clamp(1.1rem, 2.4vw, 1.7rem);
+  inset-inline-end: clamp(1.1rem, 2.4vw, 1.7rem);
+  color: var(--color-accent);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-inline-end: 2.75rem;
+}
+
+.sampleTag {
+  padding: 0.2rem 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-accent-text);
+  border: 1px dashed currentColor;
+  border-radius: var(--radius-xs);
+}
+
+.quoteWrap { margin: 0; }
+
+.quote {
+  font-size: var(--text-body);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text);
+  text-wrap: pretty;
+}
+
+.quote::before { content: '\201C'; }
+.quote::after { content: '\201D'; }
+
+.attribution {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-block-start: auto;
+  padding-block-start: 0.9rem;
+  border-block-start: 1px solid var(--color-border);
+}
+
+.name {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
+.details {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+/* ---- Feature variant --------------------------------------------------- */
+.feature {
+  background-color: var(--color-surface-alt);
+  border-color: var(--color-border-strong);
+}
+
+.feature .quote {
+  font-family: var(--font-display);
+  font-weight: 420;
+  font-variation-settings: 'SOFT' 8, 'WONK' 1, 'opsz' 40;
+  font-size: var(--text-lg);
+  line-height: 1.42;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-strong);
+}

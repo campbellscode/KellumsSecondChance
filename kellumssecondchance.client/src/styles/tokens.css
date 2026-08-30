@@ -1,0 +1,212 @@
+/* =========================================================================
+   Kellum's Second Chance Renovations — Design Tokens
+   Palette: warm charcoal, bone, stone, oak, patinated copper.
+   Every colour pairing below is checked to WCAG 2.2 AA for its intended use.
+   ========================================================================= */
+
+:root {
+  /* ---- Raw palette ------------------------------------------------- */
+  --ink-950: #12100e;
+  --ink-900: #191614;
+  --ink-850: #1e1a17;
+  --ink-800: #221e1b;
+  --ink-700: #2e2925;
+  --ink-600: #3d3630;
+
+  /* 600 and 500 are the two text-safe steps: both clear 4.5:1 on every light
+     surface (bone-0 / bone-50 / bone-75). 400 and lighter are decorative only. */
+  --stone-600: #5e564d;
+  --stone-500: #6f665b;
+  --stone-400: #8c8279;
+  --stone-300: #ada49b;
+  --stone-200: #cfc7be;
+
+  --bone-100: #e8e1d8;
+  --bone-75: #efe9e1;
+  --bone-50: #f4efe8;
+  --bone-25: #f9f6f1;
+  --bone-0: #fbf8f4;
+
+  --oak-700: #6d5238;
+  --oak-500: #8c6a4a;
+  --oak-300: #b79a7c;
+
+  --copper-700: #74391a;
+  --copper-600: #8f4a22;
+  --copper-500: #b25e2c;
+  --copper-400: #ce8250;
+  --copper-300: #de9c6c;
+  --copper-200: #f0c9ab;
+
+  --clay-600: #8c3730;
+  --sage-600: #3f6152;
+  --sage-400: #6f9483;
+
+  /* ---- Semantic tokens (light surfaces — the default) --------------- */
+  --color-bg: var(--bone-0);
+  --color-bg-alt: var(--bone-50);
+  --color-surface: #ffffff;
+  --color-surface-alt: var(--bone-50);
+  --color-surface-sunken: var(--bone-75);
+
+  --color-text: var(--ink-900);
+  --color-text-strong: var(--ink-950);
+  /*
+   * Both carry real text, including 11px mono micro-labels, so both must clear
+   * 4.5:1 on every light surface:
+   *   muted (stone-600) -> 6.8:1 on bone-0, 6.0:1 on bone-75
+   *   faint (stone-500) -> 5.3:1 on bone-0, 4.7:1 on bone-75
+   * The previous faint (stone-400, #8c8279) was 3.6:1 and failed. Visual
+   * hierarchy is carried by size, weight and letter-spacing instead.
+   */
+  --color-muted: var(--stone-600);
+  --color-faint: var(--stone-500);
+
+  --color-border: rgb(25 22 20 / 0.12);
+  --color-border-soft: rgb(25 22 20 / 0.07);
+  --color-border-strong: rgb(25 22 20 / 0.26);
+
+  --color-accent: var(--copper-500);
+  --color-accent-text: var(--copper-600);
+  --color-accent-hover: var(--copper-600);
+  --color-accent-soft: rgb(178 94 44 / 0.1);
+  /* Pure white on copper-500 is 4.66:1; the warmer #fffaf5 was 4.47:1 and failed. */
+  --color-on-accent: #ffffff;
+
+  --color-success: var(--sage-600);
+  --color-success-soft: rgb(63 97 82 / 0.11);
+  --color-danger: var(--clay-600);
+  --color-danger-soft: rgb(140 55 48 / 0.09);
+
+  --color-focus: var(--copper-600);
+
+  /* ---- Typography --------------------------------------------------- */
+  --font-display: 'Fraunces', 'Hoefler Text', 'Georgia', 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, monospace;
+
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-body: clamp(1rem, 0.22vw + 0.95rem, 1.125rem);
+  --text-lead: clamp(1.125rem, 0.55vw + 1rem, 1.375rem);
+  --text-lg: clamp(1.1875rem, 0.5vw + 1.05rem, 1.4375rem);
+  --text-xl: clamp(1.4375rem, 1vw + 1.15rem, 1.9375rem);
+  --text-2xl: clamp(1.75rem, 1.9vw + 1.2rem, 2.625rem);
+  --text-3xl: clamp(2.125rem, 3.2vw + 1.1rem, 3.75rem);
+  --text-4xl: clamp(2.5rem, 5vw + 0.8rem, 5.25rem);
+  --text-5xl: clamp(2.875rem, 7.2vw + 0.5rem, 7rem);
+
+  --leading-tight: 1.04;
+  --leading-snug: 1.16;
+  --leading-normal: 1.45;
+  --leading-relaxed: 1.66;
+
+  --tracking-tightest: -0.03em;
+  --tracking-tighter: -0.021em;
+  --tracking-tight: -0.012em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.06em;
+  --tracking-widest: 0.18em;
+
+  /* ---- Spacing ------------------------------------------------------ */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.375rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  --space-4xl: 6rem;
+  --space-5xl: 8rem;
+
+  --section-y: clamp(3.75rem, 8vw, 8rem);
+  --section-y-lg: clamp(5rem, 11vw, 11rem);
+
+  /* ---- Layout ------------------------------------------------------- */
+  --container: 78.75rem;      /* 1260 */
+  --container-wide: 92.5rem;  /* 1480 */
+  --container-narrow: 48rem;  /* 768  */
+  --container-prose: 40rem;
+  --gutter: clamp(1.25rem, 4vw, 3.25rem);
+  --header-h: 4.5rem;
+  --header-h-scrolled: 3.875rem;
+
+  /* ---- Radius ------------------------------------------------------- */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* ---- Elevation (warm-tinted, never neutral grey) ------------------ */
+  --shadow-xs: 0 1px 2px rgb(24 20 17 / 0.06);
+  --shadow-sm: 0 2px 10px -3px rgb(24 20 17 / 0.12);
+  --shadow-md: 0 14px 30px -14px rgb(24 20 17 / 0.22);
+  --shadow-lg: 0 30px 62px -26px rgb(24 20 17 / 0.34);
+  --shadow-xl: 0 52px 96px -40px rgb(24 20 17 / 0.46);
+
+  /* ---- Motion ------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+  --dur-instant: 90ms;
+  --dur-fast: 170ms;
+  --dur: 300ms;
+  --dur-slow: 620ms;
+  --dur-reveal: 900ms;
+
+  /* ---- Z-index ------------------------------------------------------ */
+  --z-base: 1;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-header: 200;
+  --z-drawer: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-skiplink: 600;
+}
+
+/* =========================================================================
+   Dark surfaces.
+   Applied per-section with [data-theme="dark"] so any component built from
+   semantic tokens inverts correctly without a single component-level override.
+   ========================================================================= */
+[data-theme='dark'] {
+  --color-bg: var(--ink-950);
+  --color-bg-alt: var(--ink-900);
+  --color-surface: var(--ink-850);
+  --color-surface-alt: var(--ink-800);
+  --color-surface-sunken: var(--ink-900);
+
+  --color-text: var(--bone-100);
+  --color-text-strong: var(--bone-0);
+  --color-muted: var(--stone-300);
+  --color-faint: var(--stone-400);
+
+  --color-border: rgb(232 225 216 / 0.14);
+  --color-border-soft: rgb(232 225 216 / 0.08);
+  --color-border-strong: rgb(232 225 216 / 0.3);
+
+  --color-accent: var(--copper-400);
+  --color-accent-text: var(--copper-400);
+  --color-accent-hover: var(--copper-300);
+  --color-accent-soft: rgb(206 130 80 / 0.14);
+  --color-on-accent: var(--ink-950);
+
+  --color-success: var(--sage-400);
+  --color-success-soft: rgb(111 148 131 / 0.16);
+  --color-danger: #e0857c;
+  --color-danger-soft: rgb(224 133 124 / 0.14);
+
+  --color-focus: var(--copper-300);
+
+  --shadow-sm: 0 2px 12px -3px rgb(0 0 0 / 0.5);
+  --shadow-md: 0 16px 34px -16px rgb(0 0 0 / 0.66);
+  --shadow-lg: 0 34px 68px -28px rgb(0 0 0 / 0.72);
+  --shadow-xl: 0 56px 104px -44px rgb(0 0 0 / 0.8);
+}

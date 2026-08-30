@@ -1,0 +1,186 @@
+.section {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  background-color: var(--ink-950);
+  color: var(--color-text);
+  padding-block: var(--section-y-lg);
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(to right, rgb(232 225 216 / 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(232 225 216 / 0.045) 1px, transparent 1px);
+  background-size: 100px 100px;
+  mask-image: radial-gradient(ellipse 92% 70% at 30% 20%, #000 8%, transparent 72%);
+  pointer-events: none;
+}
+
+.notice { margin-block-end: clamp(1.25rem, 2.5vw, 1.75rem); }
+
+/* ---- Tabs -------------------------------------------------------------- */
+.tabsWrap {
+  margin-block-end: clamp(1.5rem, 3vw, 2.25rem);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  /* Bleed to the viewport edge on mobile so the scroll affordance reads. */
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+}
+.tabsWrap::-webkit-scrollbar { display: none; }
+
+.tabs {
+  display: flex;
+  gap: 0;
+  width: max-content;
+  min-width: 100%;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.85rem 1.1rem;
+  white-space: nowrap;
+  color: var(--color-muted);
+  transition: color var(--dur-fast) var(--ease-out);
+  min-height: 3rem;
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  inset-block-end: -1px;
+  inset-inline: 0.75rem;
+  height: 2px;
+  background-color: var(--copper-400);
+  scale: 0 1;
+  transform-origin: left;
+  transition: scale var(--dur) var(--ease-out);
+}
+
+.tab:hover { color: var(--color-text); }
+.tabActive { color: var(--bone-0); }
+.tabActive::after { scale: 1 1; }
+
+.tabIndex {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--tracking-widest);
+  color: var(--color-faint);
+  font-variant-numeric: tabular-nums;
+}
+.tabActive .tabIndex { color: var(--copper-400); }
+
+.tabLabel {
+  font-size: var(--text-base);
+  font-weight: 550;
+}
+
+/* ---- Panel ------------------------------------------------------------- */
+.panel {
+  display: grid;
+  gap: clamp(1.75rem, 4vw, 3rem);
+}
+.panel:focus { outline: none; }
+.panel:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 8px; }
+
+.sliderColumn { position: relative; min-width: 0; }
+
+.slider {
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--color-border);
+}
+
+.sliderTick {
+  position: absolute;
+  inset-block-start: -9px;
+  inset-inline-start: -9px;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid var(--copper-500);
+  border-inline-end: none;
+  border-block-end: none;
+  pointer-events: none;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.detailCategory {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--copper-400);
+}
+
+.detailTitle {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 60;
+  font-size: var(--text-2xl);
+  line-height: 1.08;
+  letter-spacing: var(--tracking-tighter);
+  color: var(--bone-0);
+  max-width: 18ch;
+  text-wrap: balance;
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-block: 0.6rem 0.4rem;
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-inline-start: 1rem;
+  border-inline-start: 1px solid var(--color-border);
+}
+
+.factTerm {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.factValue {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  max-width: 56ch;
+  text-wrap: pretty;
+  /* Keeps every tab's panel a similar height so switching does not jump. */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (min-width: 68rem) {
+  .panel {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    align-items: start;
+    gap: clamp(2.5rem, 5vw, 4.5rem);
+  }
+  .tabsWrap { margin-inline: 0; padding-inline: 0; }
+}

@@ -1,0 +1,307 @@
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  background-color: var(--ink-950);
+  color: var(--color-text);
+  padding-block: clamp(3rem, 7vw, 6rem) clamp(4.5rem, 9vw, 8rem);
+}
+
+/* Architectural measure grid, fading toward the bottom. */
+.grid {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image:
+    linear-gradient(to right, rgb(232 225 216 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(232 225 216 / 0.05) 1px, transparent 1px);
+  background-size: 96px 96px;
+  mask-image: radial-gradient(ellipse 90% 75% at 22% 30%, #000 20%, transparent 78%);
+}
+
+/* Warm copper light bleeding in from the right — the "after" side. */
+.glow {
+  position: absolute;
+  inset-block-start: -22%;
+  inset-inline-end: -14%;
+  z-index: -1;
+  width: min(78vw, 60rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgb(206 130 80 / 0.2) 0%,
+    rgb(178 94 44 / 0.09) 38%,
+    transparent 68%
+  );
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 4rem);
+  max-width: calc(var(--container-wide) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ---- Copy -------------------------------------------------------------- */
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-lg);
+  min-width: 0;
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-accent-text);
+}
+
+.kickerRule {
+  width: 2rem;
+  height: 1px;
+  background-color: currentColor;
+  opacity: 0.7;
+}
+
+.headline {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 144;
+  font-size: var(--text-4xl);
+  line-height: 0.95;
+  letter-spacing: -0.032em;
+  color: var(--bone-0);
+  text-wrap: balance;
+}
+
+.headlineLine { display: block; }
+
+.headlineAccent {
+  display: block;
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: 'SOFT' 20, 'WONK' 1, 'opsz' 144;
+  color: var(--copper-400);
+  /* The seam motif: a hairline that runs under the accent line. */
+  position: relative;
+  width: fit-content;
+  padding-block-end: 0.08em;
+}
+
+.headlineAccent::after {
+  content: '';
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  height: 2px;
+  background: linear-gradient(to right, var(--copper-500), rgb(222 156 108 / 0));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .headlineLine,
+  .headlineAccent {
+    animation: heroLineIn 900ms var(--ease-out) both;
+  }
+  .headlineLine:nth-child(1) { animation-delay: 60ms; }
+  .headlineLine:nth-child(2) { animation-delay: 140ms; }
+  .headlineAccent { animation-delay: 230ms; }
+}
+
+@keyframes heroLineIn {
+  from { opacity: 0; transform: translateY(0.32em); }
+  to { opacity: 1; transform: none; }
+}
+
+.promise {
+  max-width: 46ch;
+  font-size: var(--text-lead);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+@media (max-width: 26rem) {
+  .actions > * { width: 100%; }
+}
+
+.phoneLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-base);
+  color: var(--color-muted);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.phoneLink:hover { color: var(--color-accent-text); }
+.phoneLink svg { color: var(--color-accent-text); }
+.phoneLink strong { color: var(--color-text); font-weight: 600; }
+
+.specialties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.35rem;
+  list-style: none;
+  margin: 0;
+  padding-block-start: var(--space-sm);
+  border-block-start: 1px solid var(--color-border);
+  width: 100%;
+}
+
+.specialty {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.specialtyTick {
+  width: 5px;
+  height: 5px;
+  background-color: var(--copper-500);
+  rotate: 45deg;
+  flex-shrink: 0;
+}
+
+/* ---- Showcase ---------------------------------------------------------- */
+.showcase { position: relative; min-width: 0; }
+
+.sliderFrame {
+  position: relative;
+  padding: 0.6rem;
+  background-color: rgb(232 225 216 / 0.035);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Drafting corner ticks. */
+.frameTickTl,
+.frameTickBr {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--copper-500);
+  pointer-events: none;
+}
+.frameTickTl {
+  inset-block-start: -1px;
+  inset-inline-start: -1px;
+  border-inline-end: none;
+  border-block-end: none;
+}
+.frameTickBr {
+  inset-block-end: -1px;
+  inset-inline-end: -1px;
+  border-inline-start: none;
+  border-block-start: none;
+}
+
+.slider { width: 100%; }
+
+.sliderCaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.75rem;
+  padding: 0.75rem 0.3rem 0.15rem;
+}
+
+.sliderCaptionLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--copper-400);
+}
+
+.sliderCaptionText {
+  font-size: var(--text-base);
+  color: var(--color-muted);
+}
+
+/* Overlapping portrait detail — only on wide screens where it has room. */
+.detail { display: none; }
+
+/* ---- Scroll cue -------------------------------------------------------- */
+.scrollCue {
+  display: none;
+  align-items: center;
+  gap: 0.6rem;
+  width: fit-content;
+  margin: clamp(2.5rem, 5vw, 4rem) auto 0;
+  padding-inline: var(--gutter);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-faint);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.scrollCue:hover { color: var(--color-accent-text); }
+
+.scrollCueLine {
+  width: 3rem;
+  height: 1px;
+  background: linear-gradient(to right, transparent, currentColor);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scrollCue svg { animation: nudge 2.4s var(--ease-in-out) infinite; }
+}
+@keyframes nudge {
+  0%, 72%, 100% { transform: translateY(0); }
+  84% { transform: translateY(3px); }
+}
+
+/* ---- Breakpoints ------------------------------------------------------- */
+@media (min-width: 48rem) {
+  .scrollCue { display: inline-flex; }
+}
+
+@media (min-width: 64rem) {
+  .inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+    align-items: center;
+    gap: clamp(2.5rem, 5vw, 5rem);
+  }
+  .hero { padding-block: clamp(4rem, 7vw, 7rem) clamp(3rem, 5vw, 5rem); }
+}
+
+@media (min-width: 90rem) {
+  .inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); }
+
+  .detail {
+    display: block;
+    position: absolute;
+    inset-block-end: -3.25rem;
+    inset-inline-start: -4.5rem;
+    width: 12.5rem;
+    border: 6px solid var(--ink-950);
+    box-shadow: var(--shadow-xl);
+    z-index: 2;
+  }
+}

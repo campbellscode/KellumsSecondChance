@@ -1,0 +1,161 @@
+.root {
+  --pos: 50%;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--ink-800);
+  touch-action: pan-y;
+  cursor: ew-resize;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.landscape { aspect-ratio: 3 / 2; }
+.wide { aspect-ratio: 2 / 1; }
+.portrait { aspect-ratio: 4 / 5; }
+.square { aspect-ratio: 1 / 1; }
+
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* The BEFORE frame is clipped to the left of the seam. */
+.beforeClip {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+  will-change: clip-path;
+}
+
+/* ---- The seam: the brand's signature line ------------------------------ */
+.seam {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--pos);
+  width: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.seamLine {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: -1px;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    rgb(206 130 80 / 0) 0%,
+    var(--copper-400) 12%,
+    var(--copper-300) 50%,
+    var(--copper-400) 88%,
+    rgb(206 130 80 / 0) 100%
+  );
+  box-shadow: 0 0 18px rgb(206 130 80 / 0.55);
+}
+
+/* ---- Handle ------------------------------------------------------------ */
+.handle {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: var(--pos);
+  z-index: 4;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: var(--radius-pill);
+  cursor: ew-resize;
+  background: none;
+  touch-action: none;
+}
+
+.handleFace {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  color: var(--ink-950);
+  background: linear-gradient(160deg, var(--copper-200), var(--copper-400) 55%, var(--copper-500));
+  box-shadow:
+    0 0 0 1px rgb(18 16 14 / 0.28),
+    0 10px 24px -8px rgb(18 16 14 / 0.7),
+    inset 0 1px 0 rgb(255 255 255 / 0.45);
+  transition: transform var(--dur) var(--ease-spring), box-shadow var(--dur) var(--ease-out);
+}
+
+/* Machined knurling on the handle face. */
+.handleFace::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgb(18 16 14 / 0.18);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgb(18 16 14 / 0.12) 0 1px,
+    transparent 1px 4px
+  );
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.handle:hover .handleFace { transform: scale(1.08); }
+.handle:focus-visible { outline: none; }
+.handle:focus-visible .handleFace {
+  box-shadow:
+    0 0 0 3px var(--ink-950),
+    0 0 0 6px var(--copper-300),
+    0 10px 24px -8px rgb(18 16 14 / 0.7);
+}
+.dragging .handleFace { transform: scale(0.94); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .root:not(.dragging) .beforeClip { transition: clip-path 90ms linear; }
+  .root:not(.dragging) .seam,
+  .root:not(.dragging) .handle { transition: inset-inline-start 90ms linear; }
+}
+
+/* ---- Before / After tags ----------------------------------------------- */
+.tag {
+  position: absolute;
+  inset-block-start: clamp(0.75rem, 2vw, 1.25rem);
+  z-index: 3;
+  padding: 0.4rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--bone-0);
+  background-color: rgb(18 16 14 / 0.72);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgb(232 225 216 / 0.2);
+  border-radius: var(--radius-xs);
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease-out);
+}
+
+.tagBefore { inset-inline-start: clamp(0.75rem, 2vw, 1.25rem); }
+.tagAfter {
+  inset-inline-end: clamp(0.75rem, 2vw, 1.25rem);
+  color: var(--ink-950);
+  background-color: rgb(222 156 108 / 0.92);
+  border-color: rgb(18 16 14 / 0.2);
+}
+
+/* Fade each tag out as the seam passes over it. */
+.root { --tag-fade-before: 1; }
+.tagBefore { opacity: clamp(0, calc((var(--pos) / 1% - 12) / 10), 1); }
+.tagAfter { opacity: clamp(0, calc((88 - var(--pos) / 1%) / 10), 1); }
+
+@media (max-width: 30rem) {
+  .handle { width: 2.75rem; height: 2.75rem; }
+  .tag { font-size: 0.625rem; padding: 0.3rem 0.5rem; }
+}

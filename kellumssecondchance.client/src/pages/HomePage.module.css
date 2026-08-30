@@ -1,0 +1,63 @@
+.services {
+  background-color: var(--bone-0);
+  padding-block: var(--section-y-lg);
+}
+
+.serviceFeature {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.serviceList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  list-style: none;
+  margin: clamp(1.75rem, 3vw, 2.5rem) 0 0;
+  padding: 0;
+}
+
+.serviceChip {
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+}
+
+.projects {
+  background-color: var(--bone-50);
+  padding-block: var(--section-y-lg);
+}
+
+.projectList {
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 5.5rem);
+}
+
+.reviews {
+  background-color: var(--bone-0);
+  padding-block: var(--section-y-lg);
+}
+
+.notice { margin-block-end: clamp(1.25rem, 2.5vw, 1.75rem); }
+
+.reviewGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  align-items: stretch;
+}
+
+@media (min-width: 44rem) {
+  .serviceFeature { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .reviewGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 68rem) {
+  .serviceFeature { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .reviewGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

@@ -1,0 +1,191 @@
+.section {
+  background-color: var(--bone-50);
+  padding-block: var(--section-y);
+}
+
+.layout {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+}
+
+/* ---- Details column ---------------------------------------------------- */
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-width: 0;
+}
+
+.contactList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.contactItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.contactIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.6rem;
+  height: 2.6rem;
+  color: var(--color-accent-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+}
+
+.contactBody { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+
+.contactLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.contactValue {
+  font-size: var(--text-lg);
+  font-weight: 560;
+  color: var(--color-text-strong);
+  word-break: break-word;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.contactValue:hover { color: var(--color-accent-text); }
+
+.contactAddress {
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text);
+  white-space: pre-line;
+}
+
+.noContact {
+  padding: clamp(1.15rem, 2.5vw, 1.6rem);
+  background-color: var(--color-surface);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.noContactTitle {
+  margin-block-end: 0.5rem;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
+.noContactBody {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+/* ---- Hours ------------------------------------------------------------- */
+.hours {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: clamp(1.1rem, 2.5vw, 1.5rem);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.hoursHead {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block-end: 0.45rem;
+  padding-block-end: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-accent-text);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.hoursRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  font-size: var(--text-base);
+  color: var(--color-muted);
+}
+
+.hoursValue { color: var(--color-text-strong); font-variant-numeric: tabular-nums; }
+
+/* ---- Area card --------------------------------------------------------- */
+.areaCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: clamp(1.1rem, 2.5vw, 1.5rem);
+  background-color: var(--ink-950);
+  color: var(--bone-100);
+  border-radius: var(--radius-sm);
+}
+
+.areaTitle {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--copper-300);
+}
+
+.areaBody {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--stone-300);
+}
+
+.responseNote {
+  padding-inline-start: 1rem;
+  border-inline-start: 2px solid var(--color-accent);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  max-width: 52ch;
+}
+
+/* ---- Form column ------------------------------------------------------- */
+.formColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.formIntro { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.formIntroText {
+  max-width: 52ch;
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+}
+
+@media (min-width: 68rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr);
+    gap: clamp(2.5rem, 5vw, 4.5rem);
+    align-items: start;
+  }
+  .details { position: sticky; top: calc(var(--header-h) + 2rem); }
+}

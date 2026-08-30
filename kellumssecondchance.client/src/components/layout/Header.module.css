@@ -1,0 +1,290 @@
+.header {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: var(--z-header);
+  background-color: color-mix(in srgb, var(--bone-0) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  transition:
+    transform var(--dur) var(--ease-out),
+    background-color var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out);
+}
+
+@supports not (backdrop-filter: blur(4px)) {
+  .header { background-color: var(--bone-0); }
+}
+
+.scrolled {
+  background-color: color-mix(in srgb, var(--bone-0) 94%, transparent);
+  box-shadow: 0 1px 0 rgb(25 22 20 / 0.09), var(--shadow-sm);
+}
+
+.hidden { transform: translateY(-101%); }
+
+.menuOpen {
+  background-color: var(--bone-0);
+  transform: none;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  height: var(--header-h);
+  max-width: calc(var(--container-wide) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  transition: height var(--dur) var(--ease-out);
+}
+
+.scrolled .bar { height: var(--header-h-scrolled); }
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-xs);
+  margin-inline-end: auto;
+}
+
+/* The copper hairline under the bar — the site's recurring "seam". */
+.seam {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-border) 8%,
+    var(--color-border) 46%,
+    var(--copper-500) 50%,
+    var(--color-border) 54%,
+    var(--color-border) 92%,
+    transparent
+  );
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease-out);
+}
+
+.scrolled .seam,
+.menuOpen .seam { opacity: 1; }
+
+/* ---- Desktop nav ------------------------------------------------------- */
+.nav { display: none; }
+
+.navList {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.25rem, 1.1vw, 1.1rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navLink {
+  position: relative;
+  display: inline-block;
+  padding: 0.55rem 0.6rem;
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--color-muted);
+  border-radius: var(--radius-xs);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.navLink:hover { color: var(--color-text-strong); }
+
+/* Underline that grows from the centre. */
+.navLabel { position: relative; }
+.navLabel::after {
+  content: '';
+  position: absolute;
+  inset-block-end: -0.4rem;
+  inset-inline-start: 50%;
+  width: 0;
+  height: 1.5px;
+  background-color: var(--color-accent);
+  translate: -50% 0;
+  transition: width var(--dur) var(--ease-out);
+}
+
+.navLink:hover .navLabel::after { width: 100%; }
+
+.navLinkActive { color: var(--color-text-strong); font-weight: 550; }
+.navLinkActive .navLabel::after { width: 100%; }
+
+/* ---- Actions ----------------------------------------------------------- */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.4rem, 1.2vw, 0.9rem);
+  flex-shrink: 0;
+}
+
+.phone {
+  display: none;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-strong);
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.phone:hover { color: var(--color-accent-text); }
+
+.phoneNumber { font-variant-numeric: tabular-nums; }
+.phone svg { color: var(--color-accent-text); }
+
+.cta { display: none; }
+
+.menuToggle {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-inline-end: -0.5rem;
+  color: var(--color-text-strong);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.menuToggle:hover { background-color: var(--color-accent-soft); }
+
+/* ---- Drawer ------------------------------------------------------------ */
+/*
+ * Visibility is opt-in, not delegated to the `hidden` attribute.
+ *
+ * `[hidden] { display: none }` lives in the UA stylesheet, so ANY author
+ * `display` declaration overrides it. A `.drawer { display: flex }` here would
+ * leave the drawer permanently covering the viewport on every mobile page.
+ */
+.drawer {
+  position: fixed;
+  inset-block-start: var(--header-h);
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: var(--z-drawer);
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-xl);
+  padding: clamp(1.25rem, 5vw, 2.5rem) var(--gutter) calc(var(--gutter) + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background-color: var(--bone-0);
+}
+
+.drawerOpen { display: flex; }
+
+.scrolled .drawer { inset-block-start: var(--header-h-scrolled); }
+
+.drawerNav { min-height: 0; }
+
+.drawerList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-block-start: 1px solid var(--color-border);
+}
+
+.drawerList li { border-block-end: 1px solid var(--color-border); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .drawerOpen .drawerList li {
+    animation: drawerIn 420ms var(--ease-out) both;
+    animation-delay: calc(var(--i) * 38ms);
+  }
+}
+
+@keyframes drawerIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+.drawerLink {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1.05rem 0.25rem;
+  min-height: 3.5rem;
+  color: var(--color-text-strong);
+}
+
+.drawerIndex {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-faint);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.drawerText { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+
+.drawerLabel {
+  font-family: var(--font-display);
+  font-weight: 560;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 40;
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  line-height: 1.1;
+  letter-spacing: var(--tracking-tighter);
+}
+
+.drawerDescription {
+  font-size: var(--text-base);
+  color: var(--color-muted);
+}
+
+.drawerLinkActive .drawerLabel { color: var(--color-accent-text); }
+.drawerLinkActive .drawerIndex { color: var(--color-accent); }
+
+.drawerFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  flex-shrink: 0;
+}
+
+.drawerTagline {
+  margin-block-start: 0.35rem;
+  text-align: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-base);
+  color: var(--color-muted);
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  /* Above the header, below the drawer: a tap anywhere outside closes it. */
+  z-index: calc(var(--z-drawer) - 1);
+  inset-block-start: var(--header-h);
+  background: transparent;
+  cursor: default;
+}
+
+/* ---- Breakpoints ------------------------------------------------------- */
+@media (min-width: 30rem) {
+  .cta { display: inline-flex; }
+}
+
+@media (min-width: 64rem) {
+  .phone { display: inline-flex; }
+}
+
+@media (min-width: 76rem) {
+  .nav { display: block; }
+  .brand { margin-inline-end: 0; }
+  .nav { margin-inline: auto; }
+  .menuToggle { display: none; }
+  .drawer,
+  .drawerOpen { display: none; }
+  .scrim { display: none; }
+}

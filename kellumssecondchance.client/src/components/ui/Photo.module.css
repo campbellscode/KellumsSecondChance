@@ -1,0 +1,68 @@
+.frame {
+  position: relative;
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  background-color: var(--bone-75);
+  /* Keeps the corner radius clipping the zoom transform in Safari. */
+  transform: translateZ(0);
+}
+
+.frame picture { display: contents; }
+
+.img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 1100ms var(--ease-out), filter var(--dur-slow) var(--ease-out);
+}
+
+.square { aspect-ratio: 1 / 1; }
+.landscape { aspect-ratio: 3 / 2; }
+.portrait { aspect-ratio: 4 / 5; }
+.tall { aspect-ratio: 3 / 4; }
+.wide { aspect-ratio: 2 / 1; }
+.cinema { aspect-ratio: 21 / 9; }
+
+/* Ratio-constrained frames need the image to fill the box. */
+.square .img,
+.landscape .img,
+.portrait .img,
+.tall .img,
+.wide .img,
+.cinema .img { position: absolute; inset: 0; }
+
+/* Establishes the stacking context the scrim paints into. */
+.hasScrim { isolation: isolate; }
+
+.scrim {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgb(18 16 14 / 0.86) 0%,
+    rgb(18 16 14 / 0.5) 26%,
+    rgb(18 16 14 / 0.06) 58%,
+    transparent 82%
+  );
+}
+.scrimFull {
+  background: linear-gradient(
+    to top,
+    rgb(18 16 14 / 0.78) 0%,
+    rgb(18 16 14 / 0.42) 45%,
+    rgb(18 16 14 / 0.34) 100%
+  );
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-photo-zoom]:hover .zoom,
+  [data-photo-zoom]:focus-visible .zoom,
+  [data-photo-zoom]:focus-within .zoom {
+    transform: scale(1.055);
+  }
+}

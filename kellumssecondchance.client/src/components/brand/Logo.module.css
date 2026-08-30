@@ -1,0 +1,94 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--color-text-strong);
+  min-width: 0;
+}
+
+.mark {
+  flex-shrink: 0;
+  color: var(--color-text-strong);
+  overflow: visible;
+}
+
+.worn,
+.restored,
+.seam,
+.fill {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    stroke-dasharray var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
+  transform-origin: 20px 20px;
+}
+
+/* On hover the worn half "repairs": the dashes close up and the fill spreads. */
+@media (prefers-reduced-motion: no-preference) {
+  a:hover .mark:not(.still) .worn,
+  a:focus-visible .mark:not(.still) .worn {
+    stroke-dasharray: 40 0;
+    opacity: 0.85;
+  }
+  a:hover .mark:not(.still) .fill,
+  a:focus-visible .mark:not(.still) .fill {
+    opacity: 0.3;
+  }
+  a:hover .mark:not(.still) .seam,
+  a:focus-visible .mark:not(.still) .seam {
+    transform: scaleY(1.08);
+  }
+}
+
+.wordmarkGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  min-width: 0;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-weight: 620;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 40;
+  font-size: 1.24rem;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-strong);
+}
+
+.suffix {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-block-start: 0.28rem;
+  white-space: nowrap;
+}
+
+.tagline {
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--color-muted);
+  font-family: var(--font-display);
+}
+
+.stacked {
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+.stacked .name { font-size: 1.6rem; }
+.stacked .suffix { font-size: 0.625rem; white-space: normal; }
+
+@media (max-width: 26rem) {
+  .inline .suffix { display: none; }
+  .inline .name { font-size: 1.15rem; }
+}

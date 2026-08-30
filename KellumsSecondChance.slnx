@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="kellumssecondchance.client/kellumssecondchance.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="KellumsSecondChance.Server/KellumsSecondChance.Server.csproj" />
+  <Project Path="KellumsSecondChance.Server.Tests/KellumsSecondChance.Server.Tests.csproj" />
+</Solution>

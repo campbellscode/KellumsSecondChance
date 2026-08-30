@@ -1,0 +1,136 @@
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  background-color: var(--ink-950);
+  color: var(--color-text);
+  padding-block: clamp(2.75rem, 6vw, 5rem) clamp(3rem, 7vw, 5.5rem);
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(to right, rgb(232 225 216 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(232 225 216 / 0.05) 1px, transparent 1px);
+  background-size: 90px 90px;
+  mask-image: radial-gradient(ellipse 85% 80% at 18% 30%, #000 12%, transparent 76%);
+  pointer-events: none;
+}
+
+/*
+ * NOTE: `.banner` is a LAYOUT modifier applied to the <section> via
+ * styles[layout]. The backdrop photo wrapper must not share that name, or the
+ * section itself picks up position:absolute and the page collapses.
+ */
+.bannerFrame {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background: none;
+}
+
+.bannerImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(0.4) brightness(0.44);
+}
+
+.veil {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(to right, rgb(18 16 14 / 0.95) 0%, rgb(18 16 14 / 0.8) 52%, rgb(18 16 14 / 0.62) 100%),
+    radial-gradient(ellipse 55% 75% at 88% 30%, rgb(178 94 44 / 0.24), transparent 68%);
+}
+
+.inner {
+  display: grid;
+  gap: clamp(2rem, 5vw, 3.5rem);
+  align-items: center;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.crumbs { margin-block-end: 0.35rem; }
+
+.eyebrow { color: var(--copper-300); }
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 480;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 120;
+  font-size: var(--text-3xl);
+  line-height: 0.99;
+  letter-spacing: -0.03em;
+  color: var(--bone-0);
+  max-width: 17ch;
+  text-wrap: balance;
+}
+
+.lead {
+  max-width: 56ch;
+  font-size: var(--text-lead);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  padding-block-start: 0.5rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-block-start: 0.4rem;
+  width: 100%;
+}
+
+@media (max-width: 26rem) {
+  .actions > * { width: 100%; }
+}
+
+/* ---- Panel media ------------------------------------------------------- */
+.panelMedia {
+  position: relative;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--color-border);
+  min-width: 0;
+}
+
+.panelTick {
+  position: absolute;
+  inset-block-end: -8px;
+  inset-inline-end: -8px;
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid var(--copper-500);
+  border-inline-start: none;
+  border-block-start: none;
+  pointer-events: none;
+}
+
+@media (min-width: 68rem) {
+  .panel .inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+    gap: clamp(3rem, 6vw, 5rem);
+  }
+  .title { font-size: var(--text-4xl); }
+}
+
+.plain .title,
+.banner .title { max-width: 20ch; }

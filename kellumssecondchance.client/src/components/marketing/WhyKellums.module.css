@@ -1,0 +1,99 @@
+.section {
+  background-color: var(--bone-50);
+  padding-block: var(--section-y-lg);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-border);
+  border: 1px solid var(--color-border);
+}
+
+.item {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    'icon number'
+    'title title'
+    'desc desc';
+  gap: 0.55rem 0.9rem;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  background-color: var(--bone-0);
+  transition: background-color var(--dur) var(--ease-out);
+}
+
+.item::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--color-accent);
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+.item:hover { background-color: var(--color-surface); }
+.item:hover::before { width: 100%; }
+
+.icon {
+  grid-area: icon;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  color: var(--color-accent-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-xs);
+  transition: border-color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
+}
+
+.item:hover .icon {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent-soft);
+}
+
+.number {
+  grid-area: number;
+  align-self: center;
+  justify-self: end;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-widest);
+  color: var(--color-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.title {
+  grid-area: title;
+  margin-block-start: 0.35rem;
+  font-family: var(--font-display);
+  font-weight: 560;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 36;
+  font-size: var(--text-lg);
+  line-height: 1.16;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-strong);
+}
+
+.description {
+  grid-area: desc;
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+@media (min-width: 44rem) {
+  .list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 72rem) {
+  .list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

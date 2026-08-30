@@ -1,0 +1,139 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition:
+    border-color var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out),
+    transform var(--dur) var(--ease-out);
+}
+
+.card:hover,
+.card:focus-within {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card:hover,
+  .card:focus-within { transform: translateY(-3px); }
+}
+
+/* Copper rule that draws itself across the top edge on hover. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  z-index: 3;
+  width: 0;
+  height: 2px;
+  background-color: var(--color-accent);
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+.card:hover::before,
+.card:focus-within::before { width: 100%; }
+
+/* ---- Media ------------------------------------------------------------- */
+.media { position: relative; }
+
+.mediaTick {
+  position: absolute;
+  inset-block-end: 0.75rem;
+  inset-inline-end: 0.75rem;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid rgb(240 201 171 / 0.7);
+  border-inline-start: none;
+  border-block-start: none;
+  pointer-events: none;
+}
+
+/* ---- Body -------------------------------------------------------------- */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  padding: clamp(1.25rem, 2.6vw, 1.75rem);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-block-end: 0.35rem;
+  color: var(--color-accent-text);
+  background-color: var(--color-accent-soft);
+  border-radius: var(--radius-xs);
+  transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
+}
+
+.card:hover .icon,
+.card:focus-within .icon {
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 560;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 32;
+  font-size: var(--text-lg);
+  line-height: 1.18;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-strong);
+}
+
+.link { outline-offset: 4px; }
+
+.link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.tagline {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-accent-text);
+}
+
+.summary {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-block-start: auto;
+  padding-block-start: 0.9rem;
+  font-size: var(--text-base);
+  font-weight: 560;
+  color: var(--color-accent-text);
+}
+
+.more svg { transition: transform var(--dur) var(--ease-spring); }
+.card:hover .more svg,
+.card:focus-within .more svg { transform: translate(3px, -3px); }
+
+/* Compact cards carry no artwork, so the body owns the whole card. */
+.compact .body { padding-block-start: clamp(1.35rem, 2.8vw, 1.85rem); }
+
+/* Feature cards give the artwork the top half. */
+.feature .body { padding-block-start: clamp(1rem, 2vw, 1.35rem); }
+.feature .icon { margin-block-start: -2.75rem; position: relative; z-index: 2; box-shadow: var(--shadow-sm); background-color: var(--copper-500); color: var(--bone-0); }

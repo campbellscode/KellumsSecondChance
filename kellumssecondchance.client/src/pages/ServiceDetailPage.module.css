@@ -1,0 +1,174 @@
+.loading { padding-block: clamp(5rem, 12vw, 9rem); }
+
+.body {
+  background-color: var(--bone-0);
+  padding-block: var(--section-y);
+}
+
+.layout {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 4vw, 3rem);
+  min-width: 0;
+}
+
+.intro {
+  max-width: 62ch;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-variation-settings: 'SOFT' 6, 'WONK' 1, 'opsz' 36;
+  font-size: var(--text-lg);
+  line-height: 1.5;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  text-wrap: pretty;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-block-start: clamp(1.25rem, 2.5vw, 2rem);
+  border-block-start: 1px solid var(--color-border);
+}
+
+.checkList,
+.noteList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.7rem 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checkList li,
+.noteList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.checkList svg {
+  flex-shrink: 0;
+  margin-block-start: 0.18rem;
+  color: var(--color-accent);
+}
+
+.noteList li { color: var(--color-muted); }
+.noteList svg {
+  flex-shrink: 0;
+  margin-block-start: 0.2rem;
+  color: var(--oak-500);
+}
+
+.honestNote {
+  padding-inline-start: 1rem;
+  border-inline-start: 2px solid var(--color-accent);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  max-width: 58ch;
+}
+
+/* ---- Aside ------------------------------------------------------------- */
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-width: 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: clamp(1.35rem, 2.5vw, 1.85rem);
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.panelPlain { padding-inline: 0.15rem; }
+
+.panelTitle {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-accent-text);
+}
+
+.panelText {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+}
+
+.linkList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+}
+
+/* ---- Related ----------------------------------------------------------- */
+.related {
+  background-color: var(--bone-50);
+  padding-block: var(--section-y);
+}
+
+.relatedTitle {
+  margin-block: 0.6rem clamp(1.5rem, 3vw, 2.25rem);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 60;
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-tighter);
+  color: var(--color-text-strong);
+}
+
+.relatedNotice { margin-block-end: clamp(1.25rem, 2.5vw, 1.75rem); }
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.relatedGrid > li { min-width: 0; }
+
+.backBar {
+  background-color: var(--bone-50);
+  padding-block: clamp(1.5rem, 3vw, 2.25rem);
+  border-block-start: 1px solid var(--color-border);
+}
+
+@media (min-width: 44rem) {
+  .checkList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .relatedGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 68rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+    gap: clamp(3rem, 6vw, 5.5rem);
+    align-items: start;
+  }
+  .aside { position: sticky; top: calc(var(--header-h) + 2rem); }
+  .relatedGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

@@ -1,0 +1,268 @@
+.h2 {
+  margin-block: 0.7rem 1.25rem;
+  font-family: var(--font-display);
+  font-weight: 480;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 72;
+  font-size: var(--text-2xl);
+  line-height: 1.08;
+  letter-spacing: var(--tracking-tighter);
+  color: var(--color-text-strong);
+  max-width: 20ch;
+  text-wrap: balance;
+}
+
+/* ---- Why the name ------------------------------------------------------ */
+.name {
+  background-color: var(--bone-0);
+  padding-block: var(--section-y-lg);
+}
+
+.nameGrid {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+.nameCopy { min-width: 0; }
+
+.prose {
+  display: flex;
+  flex-direction: column;
+  gap: 1.05em;
+  max-width: 60ch;
+  font-size: var(--text-body);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+.prose > p:first-child { font-size: var(--text-lead); color: var(--color-text); }
+
+.quote {
+  position: relative;
+  margin: var(--space-xl) 0 0;
+  padding-inline-start: clamp(1.25rem, 3vw, 2rem);
+  max-width: 34ch;
+}
+
+.quoteSeam {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 0.2rem;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--copper-500), rgb(178 94 44 / 0.08));
+}
+
+.quote p {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: 'SOFT' 24, 'WONK' 1, 'opsz' 48;
+  font-size: var(--text-lg);
+  line-height: 1.32;
+  color: var(--color-text-strong);
+  text-wrap: balance;
+}
+
+.nameMedia { position: relative; box-shadow: var(--shadow-lg); min-width: 0; }
+
+.mediaTick {
+  position: absolute;
+  inset-block-end: -10px;
+  inset-inline-end: -10px;
+  width: 42px;
+  height: 42px;
+  border: 1.5px solid var(--copper-500);
+  border-inline-start: none;
+  border-block-start: none;
+  pointer-events: none;
+}
+
+/* ---- Craftsmanship ----------------------------------------------------- */
+.craft {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  background-color: var(--ink-950);
+  color: var(--color-text);
+  padding-block: var(--section-y-lg);
+}
+
+.craftGrid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(to right, rgb(232 225 216 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(232 225 216 / 0.05) 1px, transparent 1px);
+  background-size: 92px 92px;
+  mask-image: radial-gradient(ellipse 80% 70% at 76% 34%, #000 10%, transparent 74%);
+  pointer-events: none;
+}
+
+.craftEyebrow { color: var(--copper-300); }
+
+.craftTitle {
+  margin-block: 0.75rem clamp(1.5rem, 3vw, 2.25rem);
+  font-family: var(--font-display);
+  font-weight: 460;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 120;
+  font-size: var(--text-3xl);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--bone-0);
+  max-width: 20ch;
+  text-wrap: balance;
+}
+
+.craftGridBody {
+  display: grid;
+  gap: 1.25rem clamp(2rem, 5vw, 4rem);
+  max-width: 76rem;
+  font-size: var(--text-body);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+/* ---- Expectations ------------------------------------------------------ */
+.expect {
+  background-color: var(--bone-0);
+  padding-block: var(--section-y-lg);
+}
+
+.expectList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.5rem, 3vw, 2.5rem) clamp(1.75rem, 4vw, 3.5rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.expectList > li {
+  padding-block-start: 1.1rem;
+  border-block-start: 1px solid var(--color-border);
+  min-width: 0;
+}
+
+.expectNumber {
+  display: block;
+  margin-block-end: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-widest);
+  color: var(--color-accent-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.expectTitle {
+  margin-block-end: 0.4rem;
+  font-family: var(--font-display);
+  font-weight: 550;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 36;
+  font-size: var(--text-lg);
+  line-height: 1.18;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-strong);
+}
+
+.expectBody {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+/* ---- Team -------------------------------------------------------------- */
+.team {
+  background-color: var(--bone-0);
+  padding-block: var(--section-y);
+}
+
+.people {
+  display: flex;
+  flex-direction: column;
+  gap: 1.05em;
+  max-width: 62ch;
+  padding-inline-start: clamp(1rem, 2.5vw, 1.5rem);
+  border-inline-start: 2px solid var(--color-accent);
+}
+
+.peopleLead {
+  font-family: var(--font-display);
+  font-weight: 420;
+  font-variation-settings: 'SOFT' 6, 'WONK' 1, 'opsz' 40;
+  font-size: var(--text-lg);
+  line-height: 1.42;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-strong);
+  text-wrap: pretty;
+}
+
+.peopleBody {
+  font-size: var(--text-body);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+.credentials {
+  display: grid;
+  gap: 1rem;
+  margin: var(--space-xl) 0 0;
+  padding: clamp(1.15rem, 2.5vw, 1.5rem);
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.credentials dt {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.credentials dd {
+  margin: 0.2rem 0 0;
+  font-size: var(--text-base);
+  color: var(--color-text-strong);
+}
+
+.areaBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-block-start: var(--space-2xl);
+  padding-block-start: var(--space-xl);
+  border-block-start: 1px solid var(--color-border);
+}
+
+.areaTitle {
+  font-family: var(--font-display);
+  font-weight: 550;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 40;
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-strong);
+}
+
+.areaBody {
+  max-width: 56ch;
+  font-size: var(--text-body);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+}
+
+@media (min-width: 44rem) {
+  .expectList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .credentials { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 68rem) {
+  .nameGrid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.85fr); align-items: center; }
+  .craftGridBody { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .expectList { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
