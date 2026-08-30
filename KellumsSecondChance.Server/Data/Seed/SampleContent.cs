@@ -10,14 +10,16 @@ namespace KellumsSecondChance.Server.Data.Seed;
 ///
 ///  ⚠ NONE OF THIS IS REAL BUSINESS DATA.
 ///
-///  • Services are CANDIDATE offerings. Somebody at Kellum's must review the
+///  • Services are CANDIDATE offerings. Somebody at Kellum’s must review the
 ///    list and remove anything the business does not actually do.
 ///  • Projects are WRITTEN EXAMPLES, not records of completed jobs. Every one is
 ///    flagged IsSampleContent so the site labels the gallery honestly.
 ///  • Testimonials are ILLUSTRATIVE. Every one is flagged IsSampleContent and is
 ///    excluded from review structured data.
 ///  • Service areas are PLACEHOLDER GEOGRAPHY with deliberately generic names.
-///  • FAQ answers containing "CONFIRM:" need a business decision before launch.
+///  • FAQ items whose answer depends on an unset business policy are seeded with
+///    a null answer and a ReviewNote, and are withheld from the public FAQ and
+///    from FAQ structured data until answered. See SampleContent.Support.cs.
 ///
 ///  This mirrors kellumssecondchance.client/src/content/sampleContent/* so the
 ///  site looks identical whether it is served from the database or the client's
@@ -353,7 +355,7 @@ public static class SampleContent
             DisplayOrder = order,
             IsFeatured = isFeatured,
             IsActive = true,
-            MetaTitle = $"{name} | Kellum's Second Chance Renovations",
+            MetaTitle = $"{name} | Kellum’s Second Chance Renovations",
             MetaDescription = summary,
         };
 
@@ -532,7 +534,7 @@ public static class SampleContent
             IsActive = true,
             IsSampleContent = true,
             DisplayOrder = order,
-            MetaTitle = $"{title} | Kellum's Second Chance Renovations",
+            MetaTitle = $"{title} | Kellum’s Second Chance Renovations",
             MetaDescription = summary,
         };
 

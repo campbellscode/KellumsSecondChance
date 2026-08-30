@@ -1,12 +1,9 @@
 import { ApiError, apiRequest } from './client';
 import type {
-  AdminEstimateRequest,
   AdminUser,
   EstimateRequestPayload,
   EstimateRequestResult,
-  EstimateRequestStatus,
   FaqItem,
-  PagedResult,
   ProjectDetail,
   ProjectSummary,
   ServiceArea,
@@ -267,39 +264,4 @@ export function adminLogout(antiforgeryToken: string): Promise<void> {
 
 export function adminMe(signal?: AbortSignal): Promise<AdminUser> {
   return apiRequest<AdminUser>('/api/admin/auth/me', { signal });
-}
-
-export interface AdminEstimateQuery {
-  readonly status?: EstimateRequestStatus | 'all';
-  readonly page?: number;
-  readonly pageSize?: number;
-  readonly search?: string;
-}
-
-export function getAdminEstimateRequests(
-  query: AdminEstimateQuery = {},
-  signal?: AbortSignal,
-): Promise<PagedResult<AdminEstimateRequest>> {
-  const params = new URLSearchParams();
-  if (query.status && query.status !== 'all') params.set('status', query.status);
-  if (query.page) params.set('page', String(query.page));
-  if (query.pageSize) params.set('pageSize', String(query.pageSize));
-  if (query.search) params.set('search', query.search);
-  const qs = params.toString();
-  return apiRequest<PagedResult<AdminEstimateRequest>>(
-    `/api/admin/estimate-requests${qs ? `?${qs}` : ''}`,
-    { signal },
-  );
-}
-
-export function updateAdminEstimateRequest(
-  id: number,
-  changes: { status?: EstimateRequestStatus; internalNotes?: string | null },
-  antiforgeryToken: string,
-): Promise<AdminEstimateRequest> {
-  return apiRequest<AdminEstimateRequest>(`/api/admin/estimate-requests/${id}`, {
-    method: 'PATCH',
-    body: changes,
-    antiforgeryToken,
-  });
 }

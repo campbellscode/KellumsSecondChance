@@ -1,0 +1,33 @@
+.rule {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.ruleLine {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, currentColor 30%, currentColor 70%, transparent);
+  opacity: 0.28;
+}
+
+.gable {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 0.875rem;
+}
+
+/* The inline marker: the same pitch, small enough to sit in a list. */
+.tick {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0.6rem;
+  height: 0.42rem;
+  background-color: currentColor;
+  /* A gable silhouette, cut from a block so it scales with font size. */
+  clip-path: polygon(50% 0%, 100% 100%, 78% 100%, 50% 42%, 22% 100%, 0% 100%);
+}
+
+.accent { color: var(--color-accent); }
+.muted { color: var(--color-border-strong); }

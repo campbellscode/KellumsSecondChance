@@ -13,6 +13,7 @@ import { SampleContentNotice } from '@/components/ui/SampleContentNotice';
 import { useAsync } from '@/lib/hooks/useAsync';
 import { getProjectCategories, getProjects } from '@/lib/api/endpoints';
 import { editorialMedia } from '@/content/media';
+import { useSiteContent } from '@/lib/siteContentContext';
 import { cn } from '@/lib/cn';
 
 const CRUMBS = [
@@ -20,9 +21,14 @@ const CRUMBS = [
   { name: 'Projects', path: '/projects' },
 ];
 
-const STRUCTURED_DATA = graph(organizationSchema(), breadcrumbSchema(CRUMBS));
 
 export default function ProjectsPage() {
+  const { site } = useSiteContent();
+  const structuredData = useMemo(
+    () => graph(organizationSchema(site), breadcrumbSchema(site, CRUMBS)),
+    [site],
+  );
+
   const [category, setCategory] = useState('all');
   const [search, setSearch] = useState('');
   const deferredSearch = useDeferredValue(search);
@@ -61,8 +67,7 @@ export default function ProjectsPage() {
         title="Second Chances We Have Built"
         description="Kitchen, bathroom, basement and whole-home renovation case studies — what was wrong, what we did about it, and how the room turned out."
         path="/projects"
-        image={editorialMedia.process.src}
-        structuredData={STRUCTURED_DATA}
+        structuredData={structuredData}
       />
 
       <PageHero
@@ -80,7 +85,7 @@ export default function ProjectsPage() {
             Project gallery
           </h2>
 
-          {hasSampleProjects ? <SampleContentNotice what="case studies" className={styles.notice} /> : null}
+          {hasSampleProjects ? <SampleContentNotice context="projects" className={styles.notice} /> : null}
 
           {/* ---- Filter bar ---------------------------------------------- */}
           <div className={styles.controls}>

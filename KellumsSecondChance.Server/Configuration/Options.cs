@@ -16,7 +16,7 @@ public class BusinessOptions
 {
     public const string SectionName = "Business";
 
-    public string BusinessName { get; set; } = "Kellum's Second Chance Renovations";
+    public string BusinessName { get; set; } = "Kellum’s Second Chance Renovations";
 
     public string Tagline { get; set; } = "Your home deserves a second chance.";
 
@@ -104,4 +104,54 @@ public class SeedOptions
     public string? AdminPassword { get; set; }
 
     public string? AdminDisplayName { get; set; }
+}
+
+
+/// <summary>Where uploaded project photography is stored and how it is served.</summary>
+public class MediaStorageOptions
+{
+    public const string SectionName = "MediaStorage";
+
+    /// <summary>
+    /// Absolute path to the media root. Empty means "wwwroot/uploads" under the
+    /// content root, which works for a standard IIS deployment.
+    ///
+    /// Point this at a path OUTSIDE the deployment folder if you want uploads to
+    /// survive a redeploy.
+    /// </summary>
+    public string? RootPath { get; set; }
+
+    /// <summary>Public URL prefix the media root is served from.</summary>
+    public string PublicPathPrefix { get; set; } = "uploads";
+
+    /// <summary>
+    /// Per-file upload ceiling.
+    ///
+    /// Capped at 15 to stay under the fixed 16 MB request-size limit on the
+    /// upload endpoints — a larger value here would be unreachable, because the
+    /// request would be refused by the pipeline before this was ever consulted.
+    /// </summary>
+    [Range(1, 15)]
+    public int MaxUploadMegabytes { get; set; } = 12;
+
+    public long MaxUploadBytes => MaxUploadMegabytes * 1024L * 1024L;
+}
+
+/// <summary>
+/// Where new-lead notifications should go, once a delivery provider exists.
+///
+/// No provider is configured in this build. See INotificationSender.
+/// </summary>
+public class NotificationOptions
+{
+    public const string SectionName = "Notifications";
+
+    /// <summary>Addresses that should be told about a new estimate request.</summary>
+    public List<string> EstimateRequestRecipients { get; set; } = [];
+
+    /// <summary>
+    /// Absolute base URL used to build the deep link into the admin console,
+    /// e.g. "https://www.example.com". Falls back to the request's own origin.
+    /// </summary>
+    public string? AdminBaseUrl { get; set; }
 }

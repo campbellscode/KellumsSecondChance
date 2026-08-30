@@ -1,6 +1,7 @@
 import styles from './TrustStrip.module.css';
 import { Icon } from '@/components/ui/Icon';
 import { Container } from '@/components/ui/Container';
+import { Roofline } from '@/components/brand/Roofline';
 import { trustPoints } from '@/content/marketing';
 
 /**
@@ -13,6 +14,7 @@ export function TrustStrip() {
   return (
     <section className={styles.strip} aria-label="How we work">
       <Container width="wide">
+        <Roofline tone="muted" className={styles.divider} />
         <ul className={styles.list}>
           {trustPoints.map((point, index) => (
             <li

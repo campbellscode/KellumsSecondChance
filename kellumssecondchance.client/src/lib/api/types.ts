@@ -156,6 +156,29 @@ export interface ServiceArea {
 
 /* -------------------------------------------------------- site settings */
 
+export interface SocialLink {
+  readonly label: string;
+  readonly href: string;
+  readonly icon: string;
+}
+
+/** One line of the trading-hours table, e.g. "Saturday" / "By appointment". */
+export interface OfficeHours {
+  readonly label: string;
+  readonly hours: string;
+}
+
+/**
+ * The editable business profile, served by GET /api/site-content.
+ *
+ * Everything here is owned by the admin console (Site settings) and stored in
+ * the SiteSettings table — it is NOT compiled into the bundle. `null` means the
+ * business has not supplied it, and the UI omits whatever it would have
+ * rendered rather than printing a placeholder.
+ *
+ * Address fields are additionally gated: they stay null unless the business has
+ * ticked "publish this address".
+ */
 export interface SiteContent {
   readonly businessName: string;
   readonly tagline: string;
@@ -166,9 +189,22 @@ export interface SiteContent {
   readonly licensing: string | null;
   readonly insurance: string | null;
   readonly foundedYear: number | null;
+  readonly addressLine1: string | null;
+  readonly addressLine2: string | null;
   readonly addressLocality: string | null;
   readonly addressRegion: string | null;
-  readonly socialLinks: readonly { readonly label: string; readonly href: string; readonly icon: string }[];
+  readonly addressPostalCode: string | null;
+  /** Canonical origin, no trailing slash. Null falls back to the build default. */
+  readonly siteUrl: string | null;
+  /** Root-relative raster social card. Null omits og:image entirely. */
+  readonly ogImagePath: string | null;
+  readonly socialLinks: readonly SocialLink[];
+  /**
+   * Trading hours. EMPTY until the business supplies them — the site shows no
+   * hours at all rather than inventing an opening time somebody might turn up
+   * on.
+   */
+  readonly officeHours: readonly OfficeHours[];
 }
 
 /* ------------------------------------------------------ estimate requests */

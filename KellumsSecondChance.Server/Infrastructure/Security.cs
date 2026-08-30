@@ -52,12 +52,18 @@ public sealed class ValidateAntiforgeryHeaderAttribute : Attribute, IAsyncAction
                 context.HttpContext.Request.Method,
                 context.HttpContext.Request.Path);
 
-            context.Result = new ObjectResult(new ProblemDetails
+            var problem = new ProblemDetails
             {
                 Title = "Your session could not be verified.",
                 Detail = "Refresh the page and try again.",
                 Status = StatusCodes.Status400BadRequest,
-            })
+            };
+
+            // Machine-readable so the client can silently fetch a fresh token and
+            // retry once, instead of showing the user a failure it can fix itself.
+            problem.Extensions["code"] = "antiforgery";
+
+            context.Result = new ObjectResult(problem)
             {
                 StatusCode = StatusCodes.Status400BadRequest,
             };

@@ -5,10 +5,14 @@ using KellumsSecondChance.Server.Data;
 using KellumsSecondChance.Server.Data.Seed;
 using KellumsSecondChance.Server.Infrastructure;
 using KellumsSecondChance.Server.Services;
+using KellumsSecondChance.Server.Infrastructure.Media;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +33,18 @@ builder.Services
 builder.Services
     .AddOptions<SeedOptions>()
     .Bind(builder.Configuration.GetSection(SeedOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services
+    .AddOptions<MediaStorageOptions>()
+    .Bind(builder.Configuration.GetSection(MediaStorageOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services
+    .AddOptions<NotificationOptions>()
+    .Bind(builder.Configuration.GetSection(NotificationOptions.SectionName))
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
@@ -201,8 +217,43 @@ builder.Services.AddRateLimiter(options =>
 /* ------------------------------------------------------------- app services */
 
 builder.Services.AddScoped<IContentService, ContentService>();
-builder.Services.AddScoped<IEstimateRequestService, EstimateRequestService>();
 builder.Services.AddScoped<ISiteContentService, SiteContentService>();
+
+/*
+ * EstimateRequestService implements the public submission contract and the
+ * admin contract from the same partial class, so both interfaces have to
+ * resolve to the SAME scoped instance — otherwise one request could end up with
+ * two DbContext-bound copies.
+ */
+builder.Services.AddScoped<EstimateRequestService>();
+builder.Services.AddScoped<IEstimateRequestService>(sp => sp.GetRequiredService<EstimateRequestService>());
+builder.Services.AddScoped<IEstimateRequestAdminService>(sp => sp.GetRequiredService<EstimateRequestService>());
+
+/* Admin content management. */
+builder.Services.AddScoped<IAdminContentService, AdminContentService>();
+builder.Services.AddScoped<IProjectMediaService, ProjectMediaService>();
+builder.Services.AddScoped<ISiteSettingsWriteService, SiteSettingsWriteService>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddScoped<IAdminMediaService, AdminMediaService>();
+builder.Services.AddScoped<IMediaStorage, LocalMediaStorage>();
+
+/*
+ * Content version: a process-wide value bumped by every admin content write and
+ * emitted as the ETag on public content reads. Singleton by definition — a
+ * scoped instance would reset on every request and never match.
+ */
+builder.Services.AddSingleton<IContentVersion, ContentVersion>();
+
+/*
+ * Lead notifications.
+ *
+ * No delivery provider is wired up in this build, so the sender writes to the
+ * application log and reports honestly that nothing was transmitted. Replacing
+ * INotificationSender is the whole job of adding real email later; nothing else
+ * changes. See Services/NotificationService.cs.
+ */
+builder.Services.AddScoped<INotificationSender, LoggingNotificationSender>();
+builder.Services.AddScoped<IEstimateRequestNotifier, EstimateRequestNotifier>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -236,6 +287,20 @@ builder.Services.AddControllers()
             };
         };
     });
+
+/*
+ * Multipart ceiling for project photo uploads.
+ *
+ * This is the last line of defence: the endpoint carries its own
+ * [RequestSizeLimit], and ProjectMediaService rejects anything over the
+ * configured MaxUploadMegabytes after inspecting the bytes.
+ */
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 16L * 1024 * 1024;
+    options.ValueLengthLimit = 1024 * 1024;
+    options.MultipartHeadersLengthLimit = 32 * 1024;
+});
 
 builder.Services.AddOpenApi();
 
@@ -280,6 +345,49 @@ app.UseHttpsRedirection();
 app.UseDefaultFiles();
 app.MapStaticAssets();
 
+/*
+ * Uploaded project photography.
+ *
+ * Served from its own file provider rather than wwwroot, so the media root can
+ * live outside the deployment folder and survive a redeploy. Two deliberate
+ * restrictions:
+ *
+ *   - a fixed content-type map. Unknown extensions are NOT served, so even if
+ *     something unexpected reached the folder it could never be handed back
+ *     with an executable or scriptable content type;
+ *   - X-Content-Type-Options: nosniff and a long immutable cache, which is safe
+ *     because stored filenames are random and never reused.
+ */
+var mediaOptions = app.Services.GetRequiredService<IOptions<MediaStorageOptions>>().Value;
+var mediaRoot = Path.GetFullPath(
+    string.IsNullOrWhiteSpace(mediaOptions.RootPath)
+        ? Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads")
+        : mediaOptions.RootPath);
+
+Directory.CreateDirectory(mediaRoot);
+
+var mediaContentTypes = new FileExtensionContentTypeProvider(
+    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        [".png"] = "image/png",
+        [".jpg"] = "image/jpeg",
+        [".jpeg"] = "image/jpeg",
+        [".webp"] = "image/webp",
+    });
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(mediaRoot),
+    RequestPath = "/" + mediaOptions.PublicPathPrefix.Trim('/'),
+    ContentTypeProvider = mediaContentTypes,
+    ServeUnknownFileTypes = false,
+    OnPrepareResponse = context =>
+    {
+        context.Context.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+        context.Context.Response.Headers.XContentTypeOptions = "nosniff";
+    },
+});
+
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -291,9 +399,22 @@ app.MapControllers();
  * unmatched /api request has to look like a missing endpoint, not a 200 with an
  * HTML document that a JSON client cannot parse.
  */
+var mediaRequestPath = "/" + mediaOptions.PublicPathPrefix.Trim('/');
+
 app.MapFallback(context =>
 {
     if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        return Task.CompletedTask;
+    }
+
+    /*
+     * A missing uploaded photo must 404 too. Answering with the SPA shell would
+     * make an <img> silently render an HTML document, so a deleted file would
+     * look like a styling fault rather than a missing file.
+     */
+    if (context.Request.Path.StartsWithSegments(mediaRequestPath, StringComparison.OrdinalIgnoreCase))
     {
         context.Response.StatusCode = StatusCodes.Status404NotFound;
         return Task.CompletedTask;

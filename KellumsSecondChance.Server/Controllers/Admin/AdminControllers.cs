@@ -23,14 +23,19 @@ namespace KellumsSecondChance.Server.Controllers.Admin;
 [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
 public abstract class AdminApiController : ControllerBase;
 
-/// <summary>Sign-in, sign-out and session probe for the admin console.</summary>
-[ApiController]
+/// <summary>
+/// Sign-in, sign-out and session probe for the admin console.
+///
+/// Inherits the authorized base like every other admin controller, so a new
+/// action here is protected unless it OPTS OUT with [AllowAnonymous]. Deriving
+/// from ControllerBase would make the safe case the one you have to remember.
+/// </summary>
 [Route("api/admin/auth")]
 public class AdminAuthController(
     SignInManager<ApplicationUser> signInManager,
     UserManager<ApplicationUser> userManager,
     IAntiforgery antiforgery,
-    ILogger<AdminAuthController> logger) : ControllerBase
+    ILogger<AdminAuthController> logger) : AdminApiController
 {
     /// <summary>
     /// Issues an antiforgery token pair. The cookie is set on the response and
@@ -93,7 +98,6 @@ public class AdminAuthController(
     }
 
     [HttpPost("logout")]
-    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [ValidateAntiforgeryHeader]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Logout()
@@ -104,7 +108,6 @@ public class AdminAuthController(
 
     /// <summary>Returns the signed-in administrator, or 401 when there is none.</summary>
     [HttpGet("me")]
-    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     [ProducesResponseType<AdminUserDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<AdminUserDto>> Me()
@@ -129,73 +132,105 @@ public class AdminAuthController(
     };
 }
 
-/// <summary>Lead management.</summary>
+/// <summary>
+/// Lead management.
+///
+/// This is the screen the business actually lives in: find a lead, read it,
+/// move it along the pipeline, and record what was said. Notes and status
+/// history are internal — no public endpoint returns either of them.
+/// </summary>
 [Route("api/admin/estimate-requests")]
-public class AdminEstimateRequestsController(IEstimateRequestService estimates) : AdminApiController
+public class AdminEstimateRequestsController(
+    IEstimateRequestAdminService estimates,
+    UserManager<ApplicationUser> users) : AdminWriteController
 {
     [HttpGet]
     [ProducesResponseType<PagedResultDto<AdminEstimateRequestDto>>(StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResultDto<AdminEstimateRequestDto>>> List(
         [FromQuery] EstimateRequestStatus? status,
+        [FromQuery] string? projectType,
+        [FromQuery] DateOnly? from,
+        [FromQuery] DateOnly? to,
         [FromQuery] string? search,
+        [FromQuery] EstimateRequestSort sort = EstimateRequestSort.NewestFirst,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
-        Response.Headers.CacheControl = "no-store";
-        return Ok(await estimates.ListAsync(status, search, page, pageSize, ct));
+        NoStore();
+        return Ok(await estimates.SearchAsync(status, projectType, from, to, search, sort, page, pageSize, ct));
     }
 
-    [HttpPatch("{id:int}")]
-    [ValidateAntiforgeryHeader]
-    [ProducesResponseType<AdminEstimateRequestDto>(StatusCodes.Status200OK)]
+    /// <summary>Project-type slugs that actually appear on leads, for the filter.</summary>
+    [HttpGet("project-types")]
+    public async Task<ActionResult<IReadOnlyList<string>>> ProjectTypes(CancellationToken ct)
+    {
+        NoStore();
+        return Ok(await estimates.GetProjectTypeFacetsAsync(ct));
+    }
+
+    [HttpGet("{id:int}")]
+    [ProducesResponseType<AdminEstimateRequestDetailDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<AdminEstimateRequestDto>> Update(
+    public async Task<ActionResult<AdminEstimateRequestDetailDto>> Detail(int id, CancellationToken ct)
+    {
+        NoStore();
+        var detail = await estimates.GetDetailAsync(id, ct);
+        return detail is null
+            ? Problem(title: "We could not find that estimate request.", statusCode: StatusCodes.Status404NotFound)
+            : Ok(detail);
+    }
+
+    [HttpPut("{id:int}/status")]
+    [ValidateAntiforgeryHeader]
+    [ProducesResponseType<AdminEstimateRequestDetailDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<AdminEstimateRequestDetailDto>> ChangeStatus(
         int id,
-        [FromBody] UpdateEstimateRequestDto dto,
+        [FromBody] EstimateRequestStatusUpdateDto dto,
         CancellationToken ct)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
-        var updated = await estimates.UpdateAsync(id, dto, ct);
-        if (updated is null)
-        {
-            return Problem(
-                title: "We could not find that estimate request.",
-                statusCode: StatusCodes.Status404NotFound);
-        }
-
-        return Ok(updated);
+        var result = await estimates.ChangeStatusAsync(id, dto.Status, dto.RowVersion, await ActorAsync(), ct);
+        return result.Ok ? Ok(result.Value) : Fail(result);
     }
-}
 
-/// <summary>
-/// Admin reads of the content catalogue.
-///
-/// These return the same DTOs as the public endpoints but require
-/// authorisation, so the console can later show inactive records that the public
-/// API filters out. Write operations for content types are the next phase.
-/// </summary>
-[Route("api/admin/content")]
-public class AdminContentController(IContentService content) : AdminApiController
-{
-    [HttpGet("services")]
-    public async Task<ActionResult<IReadOnlyList<ServiceSummaryDto>>> Services(CancellationToken ct) =>
-        Ok(await content.GetServicesAsync(ct));
+    [HttpPost("{id:int}/notes")]
+    [ValidateAntiforgeryHeader]
+    [ProducesResponseType<EstimateRequestNoteDto>(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<EstimateRequestNoteDto>> AddNote(
+        int id,
+        [FromBody] EstimateRequestNoteWriteDto dto,
+        CancellationToken ct)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
-    [HttpGet("projects")]
-    public async Task<ActionResult<IReadOnlyList<ProjectSummaryDto>>> Projects(CancellationToken ct) =>
-        Ok(await content.GetProjectsAsync(null, false, null, null, ct));
+        var result = await estimates.AddNoteAsync(id, dto.Note, await ActorAsync(), ct);
+        return result.Ok
+            ? StatusCode(StatusCodes.Status201Created, result.Value)
+            : Fail(result);
+    }
 
-    [HttpGet("testimonials")]
-    public async Task<ActionResult<IReadOnlyList<TestimonialDto>>> Testimonials(CancellationToken ct) =>
-        Ok(await content.GetTestimonialsAsync(false, ct));
+    [HttpDelete("{id:int}/notes/{noteId:int}")]
+    [ValidateAntiforgeryHeader]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteNote(int id, int noteId, CancellationToken ct)
+    {
+        var result = await estimates.DeleteNoteAsync(id, noteId, ct);
+        return result.Ok ? NoContent() : Fail(result);
+    }
 
-    [HttpGet("faqs")]
-    public async Task<ActionResult<IReadOnlyList<FaqItemDto>>> Faqs(CancellationToken ct) =>
-        Ok(await content.GetFaqsAsync(includePendingReview: true, ct));
-
-    [HttpGet("service-areas")]
-    public async Task<ActionResult<IReadOnlyList<ServiceAreaDto>>> ServiceAreas(CancellationToken ct) =>
-        Ok(await content.GetServiceAreasAsync(ct));
+    /// <summary>
+    /// Who is making the change, taken from the signed-in principal only.
+    /// Never from the request body — a client cannot claim to be somebody else.
+    /// </summary>
+    private async Task<AdminActor> ActorAsync()
+    {
+        var user = await users.GetUserAsync(User);
+        return new AdminActor(user?.Id, user?.DisplayName ?? user?.Email);
+    }
 }

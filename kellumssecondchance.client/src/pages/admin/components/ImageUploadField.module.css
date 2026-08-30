@@ -1,0 +1,129 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: var(--text-base);
+  font-weight: 550;
+  color: var(--color-text-strong);
+}
+
+.description {
+  max-width: 62ch;
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+.block { margin-block: 0.25rem; }
+
+/* ---- Current image ------------------------------------------------------ */
+.currentRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-sm);
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.preview {
+  width: min(100%, 15rem);
+  height: auto;
+  max-height: 10rem;
+  object-fit: contain;
+  background-color: var(--ink-900);
+  border-radius: var(--radius-xs);
+}
+
+.currentMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.dimensions {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-faint);
+}
+
+.altPreview {
+  max-width: 44ch;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+/* ---- Chooser ------------------------------------------------------------ */
+.dropLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.9rem;
+  font-size: var(--text-base);
+  font-weight: 550;
+  color: var(--color-muted);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.dropLabel:hover { color: var(--color-accent-text); border-color: var(--color-accent); }
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.fileInput:focus-visible + * { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.guidance {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-faint);
+  text-wrap: pretty;
+}
+
+/* ---- Pending ------------------------------------------------------------ */
+.pending {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.pendingName {
+  font-size: var(--text-base);
+  font-weight: 560;
+  color: var(--color-text-strong);
+  word-break: break-all;
+}
+
+.pendingSize { font-weight: 400; color: var(--color-faint); }
+
+.pendingActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+}

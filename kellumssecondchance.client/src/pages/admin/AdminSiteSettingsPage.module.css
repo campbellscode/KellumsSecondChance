@@ -1,0 +1,85 @@
+.block { margin-block-end: var(--space-md); }
+
+.form { display: flex; flex-direction: column; gap: var(--space-md); }
+
+.two, .three { display: grid; gap: var(--space-md); }
+
+.candidateAction { margin-block-start: var(--space-sm); }
+
+.quiet {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+.fieldError { font-size: var(--text-sm); color: var(--color-danger); }
+
+/* ---- Social links ------------------------------------------------------- */
+.socialList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.socialRow {
+  display: grid;
+  gap: var(--space-sm);
+  align-items: end;
+  padding: var(--space-sm);
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.socialIcon { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.socialIconLabel {
+  font-size: var(--text-base);
+  font-weight: 550;
+  color: var(--color-text-strong);
+}
+
+.select {
+  min-height: 3rem;
+  padding: 0.7rem 0.9rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+}
+.select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+
+.hoursList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hoursRow {
+  display: grid;
+  gap: var(--space-sm);
+  align-items: end;
+  padding: var(--space-sm);
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+@media (min-width: 44rem) {
+  .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .socialRow { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) 9rem auto; }
+  .hoursRow { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+}
+
+@media (min-width: 60rem) {
+  .three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

@@ -13,6 +13,7 @@ import { StarRating } from '@/components/ui/StarRating';
 import { useAsync } from '@/lib/hooks/useAsync';
 import { getTestimonials } from '@/lib/api/endpoints';
 import { editorialMedia } from '@/content/media';
+import { useSiteContent } from '@/lib/siteContentContext';
 import { cn } from '@/lib/cn';
 
 const CRUMBS = [
@@ -21,6 +22,7 @@ const CRUMBS = [
 ];
 
 export default function ReviewsPage() {
+  const { site } = useSiteContent();
   const [category, setCategory] = useState('all');
   const loader = useCallback((signal: AbortSignal) => getTestimonials({}, signal), []);
   const testimonials = useAsync(loader);
@@ -53,17 +55,16 @@ export default function ReviewsPage() {
     : 0;
 
   const structuredData = useMemo(
-    () => graph(organizationSchema(), breadcrumbSchema(CRUMBS), reviewSchema(all)),
-    [all],
+    () => graph(organizationSchema(site), breadcrumbSchema(site, CRUMBS), reviewSchema(site, all)),
+    [site, all],
   );
 
   return (
     <>
       <Seo
         title="Reviews"
-        description="What homeowners say about working with Kellum's Second Chance Renovations — in their words, not ours."
+        description="What homeowners say about working with Kellum’s Second Chance Renovations — in their words, not ours."
         path="/reviews"
-        image={editorialMedia.reviews.src}
         structuredData={structuredData}
       />
 
@@ -93,7 +94,7 @@ export default function ReviewsPage() {
             Customer reviews
           </h2>
 
-          {hasSample ? <SampleContentNotice what="reviews" className={styles.notice} /> : null}
+          {hasSample ? <SampleContentNotice context="reviews" className={styles.notice} /> : null}
 
           {testimonials.isLoading ? (
             <LoadingState label="Loading reviews" variant="cards" count={6} />
@@ -196,7 +197,7 @@ export default function ReviewsPage() {
             <h2 className={styles.futureTitle}>Where these come from</h2>
             <p className={styles.futureBody}>
               {hasSample
-                ? 'Every review published here will be collected directly from a homeowner we have worked with. We will not scrape them from anywhere, we will not write them ourselves, and we will not remove the ones that are less than glowing. The examples above are placeholders while the site is being set up, and they are labelled as such. If we ever add reviews from Google or another platform, they will be labelled with their source.'
+                ? 'Every review published here will be collected directly from a homeowner we have worked with. We will not scrape them from anywhere, we will not write them ourselves, and we will not remove the ones that are less than glowing. The examples above are clearly marked as examples until then. If we ever add reviews from Google or another platform, they will be labelled with their source.'
                 : 'Reviews here are collected directly from homeowners we have worked with. We do not scrape them from anywhere, we do not write them, and we do not remove the ones that are less than glowing. If we ever add reviews from Google or another platform, they will be labelled with their source.'}
             </p>
           </aside>

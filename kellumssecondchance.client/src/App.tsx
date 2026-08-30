@@ -28,7 +28,16 @@ const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout'));
 const AdminLoginPage = lazy(() => import('@/pages/admin/AdminLoginPage'));
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
 const AdminEstimateRequestsPage = lazy(() => import('@/pages/admin/AdminEstimateRequestsPage'));
-const AdminContentPage = lazy(() => import('@/pages/admin/AdminContentPage'));
+const AdminEstimateRequestDetailPage = lazy(
+  () => import('@/pages/admin/AdminEstimateRequestDetailPage'),
+);
+const AdminProjectsPage = lazy(() => import('@/pages/admin/AdminProjectsPage'));
+const AdminProjectEditorPage = lazy(() => import('@/pages/admin/AdminProjectEditorPage'));
+const AdminServicesPage = lazy(() => import('@/pages/admin/AdminServicesPage'));
+const AdminTestimonialsPage = lazy(() => import('@/pages/admin/AdminTestimonialsPage'));
+const AdminFaqsPage = lazy(() => import('@/pages/admin/AdminFaqsPage'));
+const AdminServiceAreasPage = lazy(() => import('@/pages/admin/AdminServiceAreasPage'));
+const AdminSiteSettingsPage = lazy(() => import('@/pages/admin/AdminSiteSettingsPage'));
 
 export default function App() {
   return (
@@ -56,12 +65,22 @@ export default function App() {
           <Route path="admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboardPage />} />
             <Route path="estimate-requests" element={<AdminEstimateRequestsPage />} />
-            <Route path="projects" element={<AdminContentPage kind="projects" />} />
-            <Route path="services" element={<AdminContentPage kind="services" />} />
-            <Route path="testimonials" element={<AdminContentPage kind="testimonials" />} />
-            <Route path="faqs" element={<AdminContentPage kind="faqs" />} />
-            <Route path="service-areas" element={<AdminContentPage kind="service-areas" />} />
-            <Route path="site-settings" element={<AdminContentPage kind="site-settings" />} />
+            <Route path="estimate-requests/:id" element={<AdminEstimateRequestDetailPage />} />
+            <Route path="projects" element={<AdminProjectsPage />} />
+            {/* "new" and an id share one editor — the same form, one without a record. */}
+            <Route path="projects/new" element={<AdminProjectEditorPage />} />
+            <Route path="projects/:id" element={<AdminProjectEditorPage />} />
+            {/*
+              A link written as .../edit is the obvious guess, and an owner who
+              bookmarks the editor should not land on a "not found" because of a
+              suffix. Same screen either way.
+            */}
+            <Route path="projects/:id/edit" element={<AdminProjectEditorPage />} />
+            <Route path="services" element={<AdminServicesPage />} />
+            <Route path="testimonials" element={<AdminTestimonialsPage />} />
+            <Route path="faqs" element={<AdminFaqsPage />} />
+            <Route path="service-areas" element={<AdminServiceAreasPage />} />
+            <Route path="site-settings" element={<AdminSiteSettingsPage />} />
           </Route>
         </Routes>
       </ErrorBoundary>

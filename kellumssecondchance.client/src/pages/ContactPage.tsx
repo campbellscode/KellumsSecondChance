@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ArrowUpRight, Clock, Mail, MapPin, Phone } from 'lucide-react';
 import styles from './ContactPage.module.css';
 import { Seo } from '@/lib/seo/Seo';
@@ -7,7 +8,7 @@ import { EstimateForm } from '@/components/forms/EstimateForm';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
-import { business, formatAddress, isProvided } from '@/content/business';
+import { business } from '@/content/business';
 import { useSiteContent } from '@/lib/siteContentContext';
 import { editorialMedia } from '@/content/media';
 
@@ -16,20 +17,22 @@ const CRUMBS = [
   { name: 'Contact', path: '/contact' },
 ];
 
-const STRUCTURED_DATA = graph(organizationSchema(), breadcrumbSchema(CRUMBS));
 
 export default function ContactPage() {
-  const { phone, email, content } = useSiteContent();
-  const hasDirectContact = Boolean(phone || email || isProvided(business.address));
+  const { phone, email, content, address, site } = useSiteContent();
+  const structuredData = useMemo(
+    () => graph(organizationSchema(site), breadcrumbSchema(site, CRUMBS)),
+    [site],
+  );
+  const hasDirectContact = Boolean(phone || email || address);
 
   return (
     <>
       <Seo
         title="Contact"
-        description="Get in touch with Kellum's Second Chance Renovations. Tell us about your project and a real person will get back to you."
+        description="Get in touch with Kellum’s Second Chance Renovations. Tell us about your project and a real person will get back to you."
         path="/contact"
-        image={editorialMedia.contact.src}
-        structuredData={STRUCTURED_DATA}
+        structuredData={structuredData}
       />
 
       <PageHero
@@ -81,14 +84,18 @@ export default function ContactPage() {
                     </li>
                   ) : null}
 
-                  {isProvided(business.address) ? (
+                  {address ? (
                     <li className={styles.contactItem}>
                       <span className={styles.contactIcon} aria-hidden="true">
                         <MapPin size={18} strokeWidth={1.7} />
                       </span>
                       <span className={styles.contactBody}>
                         <span className={styles.contactLabel}>Address</span>
-                        <span className={styles.contactAddress}>{formatAddress(business.address)}</span>
+                        <span className={styles.contactAddress}>
+                          {address.lines.map((line) => (
+                            <span key={line}>{line}</span>
+                          ))}
+                        </span>
                       </span>
                     </li>
                   ) : null}
@@ -110,18 +117,25 @@ export default function ContactPage() {
                 </div>
               )}
 
-              <ul className={styles.hours}>
-                <li className={styles.hoursHead}>
-                  <Clock size={15} strokeWidth={1.8} aria-hidden="true" />
-                  <span>Working hours</span>
-                </li>
-                {business.officeHours.map((entry) => (
-                  <li key={entry.label} className={styles.hoursRow}>
-                    <span>{entry.label}</span>
-                    <span className={styles.hoursValue}>{entry.hours}</span>
+              {/*
+                Hours appear only once somebody has entered them at
+                /admin/site-settings. The whole block goes rather than showing
+                a heading with nothing under it.
+              */}
+              {content.officeHours.length > 0 ? (
+                <ul className={styles.hours}>
+                  <li className={styles.hoursHead}>
+                    <Clock size={15} strokeWidth={1.8} aria-hidden="true" />
+                    <span>Working hours</span>
                   </li>
-                ))}
-              </ul>
+                  {content.officeHours.map((entry) => (
+                    <li key={entry.label} className={styles.hoursRow}>
+                      <span>{entry.label}</span>
+                      <span className={styles.hoursValue}>{entry.hours}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
 
               <div className={styles.areaCard} data-theme="dark">
                 <h3 className={styles.areaTitle}>Where we work</h3>

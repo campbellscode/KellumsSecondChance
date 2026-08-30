@@ -3,6 +3,7 @@ import styles from './Hero.module.css';
 import { BeforeAfterSlider } from './BeforeAfterSlider';
 import { Button } from '@/components/ui/Button';
 import { Photo } from '@/components/ui/Photo';
+import { Roofline } from '@/components/brand/Roofline';
 import { heroMedia } from '@/content/media';
 import { business } from '@/content/business';
 import { useSiteContent } from '@/lib/siteContentContext';
@@ -25,8 +26,8 @@ export function Hero() {
       <div className={styles.inner}>
         <div className={styles.copy}>
           <p className={styles.kicker}>
-            <span className={styles.kickerRule} aria-hidden="true" />
-            {business.legalName}
+            <Roofline variant="tick" className={styles.kickerTick} />
+            Residential renovation &amp; remodeling
           </p>
 
           <h1 id="hero-heading" className={styles.headline}>

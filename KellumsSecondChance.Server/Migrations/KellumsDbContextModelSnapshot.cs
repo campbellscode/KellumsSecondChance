@@ -239,6 +239,11 @@ namespace KellumsSecondChance.Server.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("nvarchar(60)");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -272,6 +277,79 @@ namespace KellumsSecondChance.Server.Migrations
                     b.HasIndex("SubmitterIpHash", "CreatedAtUtc");
 
                     b.ToTable("EstimateRequests", (string)null);
+                });
+
+            modelBuilder.Entity("KellumsSecondChance.Server.Domain.Entities.EstimateRequestNote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByDisplayName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("EstimateRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EstimateRequestId", "CreatedAtUtc");
+
+                    b.ToTable("EstimateRequestNotes", (string)null);
+                });
+
+            modelBuilder.Entity("KellumsSecondChance.Server.Domain.Entities.EstimateRequestStatusHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ChangedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ChangedByDisplayName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("ChangedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("EstimateRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NewStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("PreviousStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EstimateRequestId", "ChangedAtUtc");
+
+                    b.ToTable("EstimateRequestStatusHistory", (string)null);
                 });
 
             modelBuilder.Entity("KellumsSecondChance.Server.Domain.Entities.FaqItem", b =>
@@ -317,6 +395,11 @@ namespace KellumsSecondChance.Server.Migrations
                     b.Property<string>("ReviewNote")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -418,6 +501,11 @@ namespace KellumsSecondChance.Server.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -475,8 +563,18 @@ namespace KellumsSecondChance.Server.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("int");
+
+                    b.Property<long?>("FileSizeBytes")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Height")
                         .HasColumnType("int");
@@ -498,10 +596,16 @@ namespace KellumsSecondChance.Server.Migrations
                     b.Property<int>("RenovationProjectId")
                         .HasColumnType("int");
 
+                    b.Property<string>("StorageKey")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
                     b.Property<int>("Width")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StorageKey");
 
                     b.HasIndex("RenovationProjectId", "Kind", "DisplayOrder");
 
@@ -584,6 +688,11 @@ namespace KellumsSecondChance.Server.Migrations
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -683,8 +792,8 @@ namespace KellumsSecondChance.Server.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Value")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.HasKey("Key");
 
@@ -824,6 +933,28 @@ namespace KellumsSecondChance.Server.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("KellumsSecondChance.Server.Domain.Entities.EstimateRequestNote", b =>
+                {
+                    b.HasOne("KellumsSecondChance.Server.Domain.Entities.EstimateRequest", "EstimateRequest")
+                        .WithMany("Notes")
+                        .HasForeignKey("EstimateRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EstimateRequest");
+                });
+
+            modelBuilder.Entity("KellumsSecondChance.Server.Domain.Entities.EstimateRequestStatusHistory", b =>
+                {
+                    b.HasOne("KellumsSecondChance.Server.Domain.Entities.EstimateRequest", "EstimateRequest")
+                        .WithMany("StatusHistory")
+                        .HasForeignKey("EstimateRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EstimateRequest");
+                });
+
             modelBuilder.Entity("KellumsSecondChance.Server.Domain.Entities.ProjectService", b =>
                 {
                     b.HasOne("KellumsSecondChance.Server.Domain.Entities.RenovationProject", "RenovationProject")
@@ -903,6 +1034,13 @@ namespace KellumsSecondChance.Server.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("KellumsSecondChance.Server.Domain.Entities.EstimateRequest", b =>
+                {
+                    b.Navigation("Notes");
+
+                    b.Navigation("StatusHistory");
                 });
 
             modelBuilder.Entity("KellumsSecondChance.Server.Domain.Entities.RenovationProject", b =>

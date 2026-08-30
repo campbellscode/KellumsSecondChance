@@ -89,16 +89,6 @@ public class CreateEstimateRequestDto
     public int ElapsedMs { get; set; }
 }
 
-/// <summary>Admin-only status/notes update. Every field is optional.</summary>
-public class UpdateEstimateRequestDto
-{
-    [EnumDataType(typeof(EstimateRequestStatus))]
-    public EstimateRequestStatus? Status { get; set; }
-
-    [StringLength(4000)]
-    public string? InternalNotes { get; set; }
-}
-
 public class AdminLoginDto
 {
     [Required]

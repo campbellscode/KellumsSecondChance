@@ -35,6 +35,22 @@
   max-width: 30rem;
 }
 
+.footerLogo img { width: auto; height: clamp(4.5rem, 11vw, 5.75rem); }
+
+/* The brand line, set in the display face so the footer closes on the promise
+   rather than on a link list. */
+.footerTagline {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-style: italic;
+  font-variation-settings: 'SOFT' 20, 'WONK' 1, 'opsz' 48;
+  font-size: var(--text-xl);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-tight);
+  color: var(--copper-300);
+  max-width: 18ch;
+}
+
 .pitch {
   font-size: var(--text-body);
   line-height: var(--leading-relaxed);
@@ -121,7 +137,8 @@
 }
 .contactText svg { margin-block-start: 0.22rem; }
 
-.address { white-space: pre-line; }
+/* Address lines are separate spans now, one per line. */
+.address { display: flex; flex-direction: column; }
 
 .inlineLink {
   color: var(--color-accent-text);

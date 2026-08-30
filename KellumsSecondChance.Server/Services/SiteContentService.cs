@@ -1,4 +1,3 @@
-using System.Text.Json;
 using KellumsSecondChance.Server.Configuration;
 using KellumsSecondChance.Server.Data;
 using KellumsSecondChance.Server.Dtos;
@@ -13,33 +12,20 @@ public interface ISiteContentService
 }
 
 /// <summary>
-/// Assembles the business profile the client renders in the header, footer and
-/// structured data.
+/// Assembles the business profile the public site renders.
 ///
-/// Precedence: a value in the SiteSettings table wins; otherwise the appsettings
-/// "Business" section; otherwise null. Null means "not supplied" and the client
-/// omits that element — it is never replaced with an invented placeholder.
+/// PRECEDENCE: the SiteSettings table wins; otherwise the appsettings "Business"
+/// section; otherwise null. The table is edited from /admin/site-settings, which
+/// makes the console — not a TypeScript file — the authoritative source for
+/// anything a person might change.
+///
+/// Null means "not supplied", and the client omits whatever it would have
+/// rendered. Nothing here ever substitutes a placeholder.
 /// </summary>
 public class SiteContentService(KellumsDbContext db, IOptions<BusinessOptions> options)
     : ISiteContentService
 {
     private readonly BusinessOptions _business = options.Value;
-
-    public static class Keys
-    {
-        public const string BusinessName = "business.name";
-        public const string Tagline = "business.tagline";
-        public const string PhoneDisplay = "business.phone.display";
-        public const string PhoneE164 = "business.phone.e164";
-        public const string Email = "business.email";
-        public const string ServiceAreaSummary = "business.serviceAreaSummary";
-        public const string Licensing = "business.licensing";
-        public const string Insurance = "business.insurance";
-        public const string FoundedYear = "business.foundedYear";
-        public const string AddressLocality = "business.address.locality";
-        public const string AddressRegion = "business.address.region";
-        public const string SocialLinks = "business.socialLinks";
-    }
 
     public async Task<SiteContentDto> GetAsync(CancellationToken ct = default)
     {
@@ -56,40 +42,57 @@ public class SiteContentService(KellumsDbContext db, IOptions<BusinessOptions> o
             return string.IsNullOrWhiteSpace(fallback) ? null : fallback;
         }
 
-        var foundedYear = Value(Keys.FoundedYear, _business.FoundedYear?.ToString());
+        var foundedYear = Value(SiteSettingsWriteService.Keys.FoundedYear, _business.FoundedYear?.ToString());
+
+        /*
+         * The address is only published when the business has said so.
+         *
+         * A renovation company may hold an address for its own records without
+         * wanting it on a public page, so the toggle gates the whole block —
+         * including the PostalAddress node in structured data.
+         */
+        var publishAddress = string.Equals(
+            Value(SiteSettingsWriteService.Keys.PublishAddress),
+            "true",
+            StringComparison.OrdinalIgnoreCase);
 
         return new SiteContentDto(
-            Value(Keys.BusinessName, _business.BusinessName) ?? _business.BusinessName,
-            Value(Keys.Tagline, _business.Tagline) ?? _business.Tagline,
-            Value(Keys.PhoneDisplay, _business.PhoneDisplay),
-            Value(Keys.PhoneE164, _business.PhoneE164),
-            Value(Keys.Email, _business.Email),
-            Value(Keys.ServiceAreaSummary, _business.ServiceAreaSummary),
-            Value(Keys.Licensing, _business.Licensing),
-            Value(Keys.Insurance, _business.Insurance),
+            Value(SiteSettingsWriteService.Keys.BusinessName, _business.BusinessName) ?? _business.BusinessName,
+            Value(SiteSettingsWriteService.Keys.Tagline, _business.Tagline) ?? _business.Tagline,
+            Value(SiteSettingsWriteService.Keys.PhoneDisplay, _business.PhoneDisplay),
+            Value(SiteSettingsWriteService.Keys.PhoneE164, _business.PhoneE164),
+            Value(SiteSettingsWriteService.Keys.Email, _business.Email),
+            Value(SiteSettingsWriteService.Keys.ServiceAreaSummary, _business.ServiceAreaSummary),
+            Value(SiteSettingsWriteService.Keys.Licensing, _business.Licensing),
+            Value(SiteSettingsWriteService.Keys.Insurance, _business.Insurance),
             int.TryParse(foundedYear, out var year) ? year : null,
-            Value(Keys.AddressLocality, _business.AddressLocality),
-            Value(Keys.AddressRegion, _business.AddressRegion),
-            ResolveSocialLinks(Value(Keys.SocialLinks)));
+            publishAddress ? Value(SiteSettingsWriteService.Keys.AddressLine1) : null,
+            publishAddress ? Value(SiteSettingsWriteService.Keys.AddressLine2) : null,
+            publishAddress
+                ? Value(SiteSettingsWriteService.Keys.AddressLocality, _business.AddressLocality)
+                : null,
+            publishAddress
+                ? Value(SiteSettingsWriteService.Keys.AddressRegion, _business.AddressRegion)
+                : null,
+            publishAddress ? Value(SiteSettingsWriteService.Keys.AddressPostalCode) : null,
+            Value(SiteSettingsWriteService.Keys.SiteUrl),
+            Value(SiteSettingsWriteService.Keys.OgImagePath),
+            ResolveSocialLinks(Value(SiteSettingsWriteService.Keys.SocialLinks)),
+            /*
+             * Hours the business actually gave us, or none.
+             *
+             * These used to be hard-coded in the client. Publishing invented
+             * opening times is worse than publishing none: somebody drives over
+             * on a Saturday morning because the website said "by appointment".
+             */
+            SiteSettingsWriteService.ParseOfficeHours(
+                Value(SiteSettingsWriteService.Keys.OfficeHours)));
     }
 
     private IReadOnlyList<SocialLinkDto> ResolveSocialLinks(string? storedJson)
     {
-        if (!string.IsNullOrWhiteSpace(storedJson))
-        {
-            try
-            {
-                var parsed = JsonSerializer.Deserialize<List<SocialLinkDto>>(
-                    storedJson,
-                    JsonSerializerOptions.Web);
-                if (parsed is not null) return FilterValid(parsed);
-            }
-            catch (JsonException)
-            {
-                // Malformed setting: fall through to the configured list rather
-                // than failing the whole request over a footer detail.
-            }
-        }
+        var stored = SiteSettingsWriteService.ParseSocialLinks(storedJson);
+        if (stored.Count > 0) return FilterValid(stored);
 
         return FilterValid(
             _business.SocialLinks.Select(s => new SocialLinkDto(s.Label, s.Href, s.Icon)).ToList());

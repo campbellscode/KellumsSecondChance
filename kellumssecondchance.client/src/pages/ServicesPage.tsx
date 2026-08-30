@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import styles from './ServicesPage.module.css';
 import { Seo } from '@/lib/seo/Seo';
@@ -13,6 +13,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States';
 import { useAsync } from '@/lib/hooks/useAsync';
 import { getServices } from '@/lib/api/endpoints';
 import { editorialMedia } from '@/content/media';
+import { useSiteContent } from '@/lib/siteContentContext';
 
 const CRUMBS = [
   { name: 'Home', path: '/' },
@@ -20,16 +21,21 @@ const CRUMBS = [
 ];
 
 export default function ServicesPage() {
+  const { site } = useSiteContent();
   const loader = useCallback((signal: AbortSignal) => getServices(signal), []);
   const services = useAsync(loader);
 
   const featured = (services.data ?? []).filter((s) => s.isFeatured);
   const rest = (services.data ?? []).filter((s) => !s.isFeatured);
 
-  const structuredData = graph(
-    organizationSchema(),
-    breadcrumbSchema(CRUMBS),
-    ...(services.data ?? []).map((service) => serviceSchema(service)),
+  const structuredData = useMemo(
+    () =>
+      graph(
+        organizationSchema(site),
+        breadcrumbSchema(site, CRUMBS),
+        ...(services.data ?? []).map((service) => serviceSchema(site, service)),
+      ),
+    [site, services.data],
   );
 
   return (
@@ -38,7 +44,6 @@ export default function ServicesPage() {
         title="Renovation & Remodeling Services"
         description="Kitchens, bathrooms, basements, flooring, carpentry, decks, repairs and rental turnovers — residential renovation done properly, start to finish."
         path="/services"
-        image={editorialMedia.about.src}
         structuredData={structuredData}
       />
 

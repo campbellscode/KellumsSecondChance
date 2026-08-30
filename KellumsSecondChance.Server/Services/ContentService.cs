@@ -323,8 +323,13 @@ public class ContentService(KellumsDbContext db) : IContentService
                 i.PairKey))
             .ToList();
 
+        /*
+         * Only services that are still switched on. Deactivating a service must
+         * not leave a project page linking to /services/{slug}, because the
+         * public service endpoint filters on IsActive and would 404.
+         */
         var services = p.ProjectServices
-            .Where(ps => ps.RenovationService is not null)
+            .Where(ps => ps.RenovationService is not null && ps.RenovationService.IsActive)
             .OrderBy(ps => ps.DisplayOrder)
             .ToList();
 

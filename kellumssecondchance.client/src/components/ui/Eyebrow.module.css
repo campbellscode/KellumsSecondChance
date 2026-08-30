@@ -15,12 +15,6 @@
   color: var(--color-faint);
 }
 
-.rule {
-  width: 1.75rem;
-  height: 1px;
-  flex-shrink: 0;
-  background: currentColor;
-  opacity: 0.55;
-}
+.tick { color: currentColor; }
 
 .text { min-width: 0; }

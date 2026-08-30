@@ -14,10 +14,12 @@ import { ErrorState, LoadingState } from '@/components/ui/States';
 import { SampleContentNotice } from '@/components/ui/SampleContentNotice';
 import { useAsync } from '@/lib/hooks/useAsync';
 import { getProjects, getService } from '@/lib/api/endpoints';
+import { useSiteContent } from '@/lib/siteContentContext';
 import { ApiError } from '@/lib/api/client';
 import NotFoundPage from './NotFoundPage';
 
 export default function ServiceDetailPage() {
+  const { site } = useSiteContent();
   const { slug = '' } = useParams();
 
   const serviceLoader = useCallback((signal: AbortSignal) => getService(slug, signal), [slug]);
@@ -63,6 +65,12 @@ export default function ServiceDetailPage() {
     { name: service.name, path: `/services/${service.slug}` },
   ];
 
+  const structuredData = graph(
+    organizationSchema(site),
+    breadcrumbSchema(site, crumbs),
+    serviceSchema(site, service),
+  );
+
   return (
     <>
       <Seo
@@ -71,7 +79,7 @@ export default function ServiceDetailPage() {
         path={`/services/${service.slug}`}
         image={service.image?.src}
         imageAlt={service.image?.alt}
-        structuredData={graph(organizationSchema(), breadcrumbSchema(crumbs), serviceSchema(service))}
+        structuredData={structuredData}
       />
 
       <PageHero
@@ -192,7 +200,7 @@ export default function ServiceDetailPage() {
               Projects like this
             </h2>
             {related.some((p) => p.isSampleContent) ? (
-              <SampleContentNotice what="case studies" className={styles.relatedNotice} />
+              <SampleContentNotice context="projects" className={styles.relatedNotice} />
             ) : null}
             <ul className={styles.relatedGrid}>
               {related.map((project, index) => (

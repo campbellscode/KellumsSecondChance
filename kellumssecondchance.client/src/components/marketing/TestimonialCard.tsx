@@ -31,9 +31,7 @@ export function TestimonialCard({
       <div className={styles.head}>
         <StarRating value={testimonial.rating} hideLabel={false} size={15} />
         {testimonial.isSampleContent ? (
-          <span className={styles.sampleTag} title="Placeholder review used while the site is set up">
-            Sample
-          </span>
+          <span className={styles.sampleTag}>Example</span>
         ) : null}
       </div>
 

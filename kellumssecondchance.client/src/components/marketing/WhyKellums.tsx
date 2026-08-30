@@ -21,7 +21,7 @@ export function WhyKellums({ eyebrowIndex }: WhyKellumsProps = {}) {
     <section className={styles.section} aria-labelledby="why-heading">
       <Container width="wide">
         <SectionHeading
-          eyebrow="Why Kellum's"
+          eyebrow="Why Kellum’s"
           eyebrowIndex={eyebrowIndex}
           id="why-heading"
           title="You are letting people into your house. That should mean something."

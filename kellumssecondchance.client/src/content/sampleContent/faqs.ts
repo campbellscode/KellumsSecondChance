@@ -92,7 +92,7 @@ export const sampleFaqs: readonly FaqItem[] = [
     'estimates',
     'Do you charge for an estimate?',
     null,
-    'Set and publish the estimate-fee policy: is the initial walkthrough and written estimate free? Is detailed design or a measured plan charged separately?',
+    'The supplied logo prints “FREE ESTIMATES” — so the answer is very likely yes. Confirm that, and confirm whether detailed design work or a full measured plan is charged separately, then answer this and publish it.',
   ),
   faq(
     'estimates',

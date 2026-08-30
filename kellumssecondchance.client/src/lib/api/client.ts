@@ -1,7 +1,7 @@
 import type { ProblemDetails } from './types';
 
 /**
- * Thin fetch wrapper over the Kellum's API.
+ * Thin fetch wrapper over the Kellum’s API.
  *
  * Everything is same-origin (`/api/...`): in development Vite proxies to the
  * ASP.NET Core host, in production the same host serves both. That keeps cookies

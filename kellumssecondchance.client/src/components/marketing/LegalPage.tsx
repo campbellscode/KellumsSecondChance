@@ -1,9 +1,11 @@
+import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 import styles from './LegalPage.module.css';
 import { PageHero } from './PageHero';
 import { Container } from '@/components/ui/Container';
 import { Seo } from '@/lib/seo/Seo';
 import { breadcrumbSchema, graph, organizationSchema } from '@/lib/seo/structuredData';
+import { useSiteContent } from '@/lib/siteContentContext';
 
 export interface LegalSection {
   readonly id: string;
@@ -35,10 +37,20 @@ export function LegalPage({
   reviewNotice,
   sections,
 }: LegalPageProps) {
-  const crumbs = [
-    { name: 'Home', path: '/' },
-    { name: title, path },
-  ];
+  const { site } = useSiteContent();
+
+  const crumbs = useMemo(
+    () => [
+      { name: 'Home', path: '/' },
+      { name: title, path },
+    ],
+    [title, path],
+  );
+
+  const structuredData = useMemo(
+    () => graph(organizationSchema(site), breadcrumbSchema(site, crumbs)),
+    [site, crumbs],
+  );
 
   return (
     <>
@@ -46,7 +58,7 @@ export function LegalPage({
         title={title}
         description={description}
         path={path}
-        structuredData={graph(organizationSchema(), breadcrumbSchema(crumbs))}
+        structuredData={structuredData}
       />
 
       <PageHero eyebrow={eyebrow} title={title} lead={lead} crumbs={crumbs} layout="plain" />

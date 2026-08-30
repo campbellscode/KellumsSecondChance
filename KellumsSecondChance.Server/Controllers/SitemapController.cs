@@ -16,7 +16,7 @@ namespace KellumsSecondChance.Server.Controllers;
 /// serves correct absolute URLs on staging and production without a rebuild.
 /// </summary>
 [ApiController]
-public class SitemapController(IContentService content) : ControllerBase
+public class SitemapController(IContentService content, IContentVersion contentVersion) : ControllerBase
 {
     private static readonly XNamespace Sitemap = "http://www.sitemaps.org/schemas/sitemap/0.9";
 
@@ -67,7 +67,13 @@ public class SitemapController(IContentService content) : ControllerBase
             new XDeclaration("1.0", "utf-8", null),
             new XElement(Sitemap + "urlset", urls));
 
-        Response.Headers.CacheControl = "public, max-age=3600";
+        /*
+         * Same content version as every other public read. Without an ETag the
+         * sitemap could advertise a project for an hour after it was
+         * unpublished — §44 is about exactly this.
+         */
+        Response.Headers.ETag = contentVersion.Current;
+        Response.Headers.CacheControl = "public, max-age=300, must-revalidate";
         return Content(document.ToString(), "application/xml", Encoding.UTF8);
     }
 

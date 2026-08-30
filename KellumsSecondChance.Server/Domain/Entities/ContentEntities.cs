@@ -56,6 +56,13 @@ public class RenovationService : ContentEntity
 
     public string? ImageAlt { get; set; }
 
+    /// <summary>
+    /// Optimistic concurrency token. A service page carries several paragraphs
+    /// of written copy, so a silent last-write-wins would discard somebody's
+    /// work without telling them.
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
+
     public bool IsFeatured { get; set; }
 
     public string? MetaTitle { get; set; }
@@ -112,6 +119,13 @@ public class RenovationProject : ContentEntity
     public ICollection<RenovationProjectImage> Images { get; set; } = [];
 
     public ICollection<ProjectService> ProjectServices { get; set; } = [];
+
+    /// <summary>
+    /// Optimistic concurrency token. A project edit is a long session — story
+    /// text, service assignment, photo work — so a silent last-write-wins would
+    /// quietly destroy someone's afternoon.
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
 }
 
 /// <summary>One photograph belonging to a project.</summary>
@@ -141,6 +155,29 @@ public class RenovationProjectImage
 
     /// <summary>Ties a Before to its matching After for the comparison slider.</summary>
     public string? PairKey { get; set; }
+
+    /// <summary>
+    /// Storage key for an uploaded file, e.g. "projects/7/f3a9…webp".
+    ///
+    /// Null for seeded artwork that ships with the app rather than being
+    /// uploaded. Deletion only ever removes a physical file when this is set —
+    /// the storage layer resolves it, and no client-supplied path is ever used.
+    /// </summary>
+    public string? StorageKey { get; set; }
+
+    /// <summary>Bytes on disk, for the media overview. Null for bundled artwork.</summary>
+    public long? FileSizeBytes { get; set; }
+
+    /// <summary>Detected content type of an uploaded file, e.g. "image/webp".</summary>
+    public string? ContentType { get; set; }
+
+    /// <summary>
+    /// When the file was uploaded. NULL for artwork that shipped with the
+    /// application, whose creation date genuinely is not recorded — the same
+    /// rule the rest of the codebase follows rather than stamping a made-up
+    /// date on rows that predate this column.
+    /// </summary>
+    public DateTime? CreatedAtUtc { get; set; }
 }
 
 /// <summary>Join table: which services were performed on a project.</summary>
@@ -210,6 +247,13 @@ public class FaqItem : ContentEntity
 
     /// <summary>Staff-only note describing what the business still has to decide.</summary>
     public string? ReviewNote { get; set; }
+
+    /// <summary>
+    /// Optimistic concurrency token. Answers are written prose, and the review
+    /// gate makes a lost edit worse than usual: two people could each believe
+    /// they had answered a withheld question.
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
 }
 
 /// <summary>Somewhere the business will travel to.</summary>

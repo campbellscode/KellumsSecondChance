@@ -4,6 +4,8 @@
   padding-block: clamp(2rem, 4vw, 3rem);
 }
 
+.divider { margin-block-end: clamp(1.5rem, 3vw, 2.25rem); }
+
 .list {
   display: grid;
   grid-template-columns: 1fr;

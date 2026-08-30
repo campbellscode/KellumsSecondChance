@@ -16,6 +16,7 @@ import { SampleContentNotice } from '@/components/ui/SampleContentNotice';
 import { ApiError } from '@/lib/api/client';
 import { useAsync } from '@/lib/hooks/useAsync';
 import { getProject } from '@/lib/api/endpoints';
+import { useSiteContent } from '@/lib/siteContentContext';
 import { formatMonthYear } from '@/lib/format';
 import NotFoundPage from './NotFoundPage';
 import type { BeforeAfterPair, ProjectDetail } from '@/lib/api/types';
@@ -42,6 +43,7 @@ function pairImages(project: ProjectDetail): BeforeAfterPair[] {
 
 export default function ProjectDetailPage() {
   const { slug = '' } = useParams();
+  const { site } = useSiteContent();
   const loader = useCallback((signal: AbortSignal) => getProject(slug, signal), [slug]);
   const { data: project, status, error, reload, isLoading } = useAsync(loader);
 
@@ -49,6 +51,23 @@ export default function ProjectDetailPage() {
   const gallery = useMemo(
     () => (project ? project.images.filter((i) => i.kind === 'Gallery') : []),
     [project],
+  );
+
+  const crumbs = useMemo(
+    () => [
+      { name: 'Home', path: '/' },
+      { name: 'Projects', path: '/projects' },
+      ...(project ? [{ name: project.title, path: `/projects/${project.slug}` }] : []),
+    ],
+    [project],
+  );
+
+  const structuredData = useMemo(
+    () =>
+      project
+        ? graph(organizationSchema(site), breadcrumbSchema(site, crumbs), projectSchema(site, project))
+        : [],
+    [site, crumbs, project],
   );
 
   if (status === 'error' && error instanceof ApiError && error.status === 404) {
@@ -75,12 +94,6 @@ export default function ProjectDetailPage() {
     );
   }
 
-  const crumbs = [
-    { name: 'Home', path: '/' },
-    { name: 'Projects', path: '/projects' },
-    { name: project.title, path: `/projects/${project.slug}` },
-  ];
-
   const completed = formatMonthYear(project.completedOn);
 
   return (
@@ -92,7 +105,7 @@ export default function ProjectDetailPage() {
         image={project.coverImage?.src}
         imageAlt={project.coverImage?.alt}
         type="article"
-        structuredData={graph(organizationSchema(), breadcrumbSchema(crumbs), projectSchema(project))}
+        structuredData={structuredData}
       />
 
       <PageHero
@@ -141,7 +154,7 @@ export default function ProjectDetailPage() {
       <section className={styles.story} aria-labelledby="story-heading">
         <Container width="wide">
           {project.isSampleContent ? (
-            <SampleContentNotice what="case studies" className={styles.notice} />
+            <SampleContentNotice context="projects" className={styles.notice} />
           ) : null}
 
           <div className={styles.storyGrid}>

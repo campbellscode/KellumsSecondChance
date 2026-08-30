@@ -62,4 +62,17 @@ public class EstimateRequest
 
     /// <summary>Truncated user agent, kept for spam triage only.</summary>
     public string? UserAgent { get; set; }
+
+    /// <summary>
+    /// Optimistic concurrency token.
+    ///
+    /// Two people triaging the same inbox is the normal case, not an edge case:
+    /// without this, whoever saves second silently discards the first person's
+    /// status change. A stale token produces a 409 the console can explain.
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
+
+    public ICollection<EstimateRequestNote> Notes { get; set; } = [];
+
+    public ICollection<EstimateRequestStatusHistory> StatusHistory { get; set; } = [];
 }

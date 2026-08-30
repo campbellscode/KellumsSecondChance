@@ -150,9 +150,26 @@ public record SiteContentDto(
     string? Licensing,
     string? Insurance,
     int? FoundedYear,
+    // Address fields are null unless the business has opted to publish them.
+    string? AddressLine1,
+    string? AddressLine2,
     string? AddressLocality,
     string? AddressRegion,
-    IReadOnlyList<SocialLinkDto> SocialLinks);
+    string? AddressPostalCode,
+    /// <summary>Canonical origin. Null until set; the client falls back to its own origin.</summary>
+    string? SiteUrl,
+    /// <summary>Root-relative raster social card. Null omits og:image entirely.</summary>
+    string? OgImagePath,
+    IReadOnlyList<SocialLinkDto> SocialLinks,
+    /// <summary>
+    /// Trading hours. EMPTY until the business supplies them — the site shows
+    /// no hours at all rather than inventing an opening time somebody might
+    /// turn up on.
+    /// </summary>
+    IReadOnlyList<OfficeHoursDto> OfficeHours);
+
+/// <summary>One line of the trading-hours table, e.g. "Saturday" / "By appointment".</summary>
+public record OfficeHoursDto(string Label, string Hours);
 
 /// <summary>Paged envelope for admin list endpoints.</summary>
 public record PagedResultDto<T>(

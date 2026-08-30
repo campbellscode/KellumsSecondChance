@@ -20,7 +20,19 @@ public enum SubmissionOutcome
     RateLimited,
 }
 
-public record SubmissionResult(SubmissionOutcome Outcome, EstimateRequestResultDto? Result);
+/// <param name="Saved">
+/// The persisted lead, for callers that need to act on it — currently the
+/// notification hook. NULL for a rejected or rate-limited submission, and null
+/// for a detected bot, which is never written at all.
+///
+/// This is an entity rather than a DTO on purpose: it never leaves the server
+/// assembly, and the alternative would be a second projection that exists only
+/// to be read once.
+/// </param>
+public record SubmissionResult(
+    SubmissionOutcome Outcome,
+    EstimateRequestResultDto? Result,
+    EstimateRequest? Saved = null);
 
 public interface IEstimateRequestService
 {
@@ -29,18 +41,9 @@ public interface IEstimateRequestService
         string? clientIp,
         string? userAgent,
         CancellationToken ct = default);
-
-    Task<PagedResultDto<AdminEstimateRequestDto>> ListAsync(
-        EstimateRequestStatus? status,
-        string? search,
-        int page,
-        int pageSize,
-        CancellationToken ct = default);
-
-    Task<AdminEstimateRequestDto?> UpdateAsync(int id, UpdateEstimateRequestDto dto, CancellationToken ct = default);
 }
 
-public class EstimateRequestService(
+public partial class EstimateRequestService(
     KellumsDbContext db,
     IOptions<AntiSpamOptions> antiSpamOptions,
     ILogger<EstimateRequestService> logger) : IEstimateRequestService
@@ -141,107 +144,8 @@ public class EstimateRequestService(
             new EstimateRequestResultDto(
                 entity.Reference,
                 entity.CreatedAtUtc,
-                "We have got it. A person reads every request that comes in, and we will be in touch to arrange a look at the space."));
-    }
-
-    public async Task<PagedResultDto<AdminEstimateRequestDto>> ListAsync(
-        EstimateRequestStatus? status,
-        string? search,
-        int page,
-        int pageSize,
-        CancellationToken ct = default)
-    {
-        var safePage = Math.Max(page, 1);
-        var safeSize = Math.Clamp(pageSize, 1, 100);
-
-        var query = db.EstimateRequests.AsNoTracking();
-
-        if (status.HasValue) query = query.Where(r => r.Status == status.Value);
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var term = search.Trim();
-            query = query.Where(r =>
-                EF.Functions.Like(r.FirstName, $"%{term}%")
-                || EF.Functions.Like(r.LastName, $"%{term}%")
-                || EF.Functions.Like(r.Email, $"%{term}%")
-                || EF.Functions.Like(r.Reference, $"%{term}%"));
-        }
-
-        var total = await query.CountAsync(ct);
-
-        var items = await query
-            .OrderByDescending(r => r.CreatedAtUtc)
-            .Skip((safePage - 1) * safeSize)
-            .Take(safeSize)
-            .Select(r => new AdminEstimateRequestDto(
-                r.Id,
-                r.Reference,
-                r.FirstName,
-                r.LastName,
-                r.Email,
-                r.Phone,
-                r.ProjectTypeSlugs,
-                r.PropertyType,
-                r.AddressLine,
-                r.City,
-                r.PostalCode,
-                r.Timeline,
-                r.BudgetRange,
-                r.Description,
-                r.PreferredContactMethod,
-                r.ReferralSource,
-                r.Status,
-                r.InternalNotes,
-                r.CreatedAtUtc,
-                r.UpdatedAtUtc))
-            .ToListAsync(ct);
-
-        return new PagedResultDto<AdminEstimateRequestDto>(
-            items,
-            safePage,
-            safeSize,
-            total,
-            total == 0 ? 1 : (int)Math.Ceiling(total / (double)safeSize));
-    }
-
-    public async Task<AdminEstimateRequestDto?> UpdateAsync(
-        int id,
-        UpdateEstimateRequestDto dto,
-        CancellationToken ct = default)
-    {
-        var entity = await db.EstimateRequests.FirstOrDefaultAsync(r => r.Id == id, ct);
-        if (entity is null) return null;
-
-        if (dto.Status.HasValue) entity.Status = dto.Status.Value;
-        if (dto.InternalNotes is not null)
-        {
-            entity.InternalNotes = dto.InternalNotes.Length == 0 ? null : dto.InternalNotes;
-        }
-
-        await db.SaveChangesAsync(ct);
-
-        return new AdminEstimateRequestDto(
-            entity.Id,
-            entity.Reference,
-            entity.FirstName,
-            entity.LastName,
-            entity.Email,
-            entity.Phone,
-            entity.ProjectTypeSlugs,
-            entity.PropertyType,
-            entity.AddressLine,
-            entity.City,
-            entity.PostalCode,
-            entity.Timeline,
-            entity.BudgetRange,
-            entity.Description,
-            entity.PreferredContactMethod,
-            entity.ReferralSource,
-            entity.Status,
-            entity.InternalNotes,
-            entity.CreatedAtUtc,
-            entity.UpdatedAtUtc);
+                "We have got it. A person reads every request that comes in, and we will be in touch to arrange a look at the space."),
+            entity);
     }
 
     /* ------------------------------------------------------------ helpers */

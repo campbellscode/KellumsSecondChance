@@ -132,8 +132,8 @@
   --container-narrow: 48rem;  /* 768  */
   --container-prose: 40rem;
   --gutter: clamp(1.25rem, 4vw, 3.25rem);
-  --header-h: 4.5rem;
-  --header-h-scrolled: 3.875rem;
+  --header-h: 4.875rem;
+  --header-h-scrolled: 4.125rem;
 
   /* ---- Radius ------------------------------------------------------- */
   --radius-xs: 2px;

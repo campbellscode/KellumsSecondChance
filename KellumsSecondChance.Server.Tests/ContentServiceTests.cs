@@ -182,6 +182,42 @@ public class ContentServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Deactivating_a_service_removes_it_from_project_pages_without_breaking_them()
+    {
+        // Switching a service off must never leave a project linking to a URL
+        // the public service endpoint will 404 on.
+        var flooring = _fixture.Db.RenovationServices.Single(s => s.Slug == "flooring");
+        flooring.IsActive = false;
+        await _fixture.Db.SaveChangesAsync();
+
+        var project = await _service.GetProjectAsync("maple-street-kitchen");
+
+        Assert.NotNull(project);
+        Assert.DoesNotContain("flooring", project.ServiceSlugs);
+        // The rest of the case study is untouched.
+        Assert.NotEmpty(project.ServiceSlugs);
+        Assert.Equal(project.ServiceSlugs.Count, project.ServiceNames.Count);
+    }
+
+    [Fact]
+    public async Task Deactivating_a_service_leaves_the_rest_of_the_site_working()
+    {
+        var target = _fixture.Db.RenovationServices.Single(s => s.Slug == "flooring");
+        target.IsActive = false;
+        await _fixture.Db.SaveChangesAsync();
+
+        var services = await _service.GetServicesAsync();
+        var projects = await _service.GetProjectsAsync(null, false, null, null);
+        var categories = await _service.GetProjectCategoriesAsync();
+
+        Assert.DoesNotContain(services, s => s.Slug == "flooring");
+        Assert.Null(await _service.GetServiceAsync("flooring"));
+        // Projects and the gallery filters are unaffected.
+        Assert.Equal(6, projects.Count);
+        Assert.NotEmpty(categories);
+    }
+
+    [Fact]
     public async Task GetProject_does_not_return_a_deactivated_project()
     {
         var target = _fixture.Db.RenovationProjects.First();

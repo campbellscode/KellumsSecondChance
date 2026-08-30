@@ -1,0 +1,94 @@
+.dialog {
+  width: min(100% - 2rem, var(--dialog-w, 30rem));
+  max-height: min(85svh, 52rem);
+  padding: 0;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden auto;
+}
+
+.sm { --dialog-w: 30rem; }
+.md { --dialog-w: 42rem; }
+.lg { --dialog-w: 58rem; }
+
+.dialog::backdrop {
+  background-color: rgb(9 7 6 / 0.62);
+  backdrop-filter: blur(2px);
+}
+
+.head {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-raised);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background-color: var(--color-surface);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 550;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-strong);
+}
+
+.description {
+  max-width: 60ch;
+  margin-block-start: 0.3rem;
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  color: var(--color-faint);
+  border-radius: var(--radius-sm);
+  transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+.close:hover { color: var(--color-text-strong); background-color: var(--color-surface-alt); }
+
+.body { padding: var(--space-lg); }
+
+.confirmBody {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text);
+  text-wrap: pretty;
+}
+.confirmBody strong { color: var(--color-text-strong); }
+
+.footer {
+  position: sticky;
+  inset-block-end: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+  padding: var(--space-md) var(--space-lg);
+  background-color: var(--color-surface);
+  border-block-start: 1px solid var(--color-border);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dialog[open] {
+    animation: dialogIn var(--dur-fast) var(--ease-out);
+  }
+}
+
+@keyframes dialogIn {
+  from { opacity: 0; translate: 0 0.5rem; }
+  to { opacity: 1; translate: 0 0; }
+}

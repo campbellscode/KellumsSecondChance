@@ -97,7 +97,7 @@ export function TransformationFeature({
         />
 
         {isSampleContent ? (
-          <SampleContentNotice what="comparisons" className={styles.notice} />
+          <SampleContentNotice context="comparisons" className={styles.notice} />
         ) : null}
 
         <div className={styles.tabsWrap}>

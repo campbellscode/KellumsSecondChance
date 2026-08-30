@@ -34,6 +34,11 @@ public class KellumsDbContext(DbContextOptions<KellumsDbContext> options)
 
     public DbSet<EstimateRequest> EstimateRequests => Set<EstimateRequest>();
 
+    public DbSet<EstimateRequestNote> EstimateRequestNotes => Set<EstimateRequestNote>();
+
+    public DbSet<EstimateRequestStatusHistory> EstimateRequestStatusHistory =>
+        Set<EstimateRequestStatusHistory>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

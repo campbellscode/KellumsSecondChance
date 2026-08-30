@@ -14,52 +14,54 @@ public static partial class SampleContentSupport
     /// </summary>
     public static List<CustomerTestimonial> Testimonials() =>
     [
-        Testimonial(1, "Sample", "A", 5,
+        Testimonial(1, 5,
             "They found water damage under our shower that two other contractors had walked right past. Instead of quietly covering it up, they pulled us in, showed us the subfloor, and explained what it would take. That is the moment we knew we had picked the right crew.",
             "Bathroom Renovations", new DateOnly(2025, 6, 20), isFeatured: true),
 
-        Testimonial(2, "Sample", "B", 5,
+        Testimonial(2, 5,
             "What I noticed most was the cleanup. Every single evening the floors were swept, the tools were stacked, and the plastic was back up. Six weeks of work and we never once felt like we had lost our house.",
             "Kitchen Remodeling", new DateOnly(2025, 4, 29), isFeatured: true),
 
-        Testimonial(3, "Sample", "C", 5,
+        Testimonial(3, 5,
             "We expected to be told the whole deck had to come out. They pulled boards, checked the framing, and told us most of it was fine. It cost us less than we had budgeted, which is not something I have ever said about a contractor before.",
             "Decks & Exteriors", new DateOnly(2025, 8, 1), isFeatured: true),
 
-        Testimonial(4, "Sample", "D", 5,
+        Testimonial(4, 5,
             "Our basement had been a storage room for eleven years. It is now where the kids do homework and we watch films. I keep going down there just because I can.",
             "Basement Finishing", new DateOnly(2025, 3, 11)),
 
-        Testimonial(5, "Sample", "E", 5,
+        Testimonial(5, 5,
             "The trim work is the part I show people. The mitres are still tight a year later and the profiles actually match what is upstairs. Whoever ran that saw knew exactly what they were doing.",
             "Carpentry & Trim", new DateOnly(2025, 1, 16)),
 
-        Testimonial(6, "Sample", "F", 4,
+        Testimonial(6, 4,
             "A material delay pushed us back about a week, which was frustrating. But they told me the day they found out rather than the day it mattered, and they had a plan. I would still hire them again without hesitating.",
             "Interior Renovations", new DateOnly(2024, 12, 4)),
 
-        Testimonial(7, "Sample", "G", 5,
+        Testimonial(7, 5,
             "I manage six units and turnovers are usually a three-week headache of chasing people. They walked the unit, sent me a list, and it was done in eleven days with photos of everything.",
             "Rental Property Turnovers", new DateOnly(2025, 6, 2)),
 
-        Testimonial(8, "Sample", "H", 5,
+        Testimonial(8, 5,
             "They walked our house and told us one of the three things on our list was not worth doing yet. Turning down work to give us honest advice is why we called them back six months later for the big project.",
             "Repair & Restoration", new DateOnly(2025, 2, 8), isFeatured: true),
     ];
 
+    /// <summary>
+    /// Attributed to "Example review" rather than an invented person, so the
+    /// attribution line itself can never read as a real customer.
+    /// </summary>
     private static CustomerTestimonial Testimonial(
         int order,
-        string firstName,
-        string lastInitial,
         byte rating,
         string quote,
         string category,
         DateOnly reviewedOn,
         bool isFeatured = false) => new()
         {
-            FirstName = firstName,
-            LastInitial = lastInitial,
-            Location = "Example neighbourhood",
+            FirstName = "Example review",
+            LastInitial = null,
+            Location = null,
             Rating = rating,
             Quote = quote,
             ProjectCategory = category,
@@ -82,7 +84,7 @@ public static partial class SampleContentSupport
             Name = "Primary service city",
             Kind = ServiceAreaKind.City,
             IsPrimary = true,
-            Note = "Placeholder — replace with the main city Kellum's serves.",
+            Note = "Placeholder — replace with the main city Kellum’s serves.",
             DisplayOrder = 1,
             IsActive = true,
             IsSampleContent = true,
@@ -102,7 +104,7 @@ public static partial class SampleContentSupport
             Name = "Neighbouring towns",
             Kind = ServiceAreaKind.Region,
             IsPrimary = false,
-            Note = "Placeholder — list the surrounding towns Kellum's travels to.",
+            Note = "Placeholder — list the surrounding towns Kellum’s travels to.",
             DisplayOrder = 3,
             IsActive = true,
             IsSampleContent = true,
@@ -162,7 +164,7 @@ public static partial class SampleContentSupport
             Faq("estimates", "Estimates",
                 "Do you charge for an estimate?",
                 null,
-                "Set and publish the estimate-fee policy: is the initial walkthrough and written estimate free? Is detailed design or a measured plan charged separately?"),
+                "The supplied logo prints \"FREE ESTIMATES\" — so the answer is very likely yes. Confirm that, and confirm whether detailed design work or a full measured plan is charged separately, then answer this and publish it."),
             Faq("estimates", "Estimates",
                 "Why is my estimate a range instead of one number?",
                 "Because some things are genuinely unknown until a wall or a floor is open. We would rather give you an honest range with the variables named than a single confident number that changes the moment we start. Where the scope is fully knowable, you will get a fixed figure."),

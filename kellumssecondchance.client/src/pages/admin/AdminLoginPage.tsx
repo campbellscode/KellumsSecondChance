@@ -61,7 +61,7 @@ export default function AdminLoginPage() {
       <Seo title="Admin sign in" description="Sign in to manage site content." path="/admin/login" noIndex />
 
       <main className={styles.card}>
-        <LogoMark size={44} still className={styles.mark} />
+        <LogoMark size={40} tone="onDark" className={styles.mark} />
         <h1 className={styles.title}>Sign in</h1>
         <p className={styles.subtitle}>
           Staff access to estimate requests and site content.

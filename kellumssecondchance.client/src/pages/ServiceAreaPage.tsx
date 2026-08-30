@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ArrowUpRight, MapPin } from 'lucide-react';
 import styles from './ServiceAreaPage.module.css';
 import { Seo } from '@/lib/seo/Seo';
@@ -22,7 +22,6 @@ const CRUMBS = [
   { name: 'Service Area', path: '/service-area' },
 ];
 
-const STRUCTURED_DATA = graph(organizationSchema(), breadcrumbSchema(CRUMBS));
 
 const KIND_LABEL: Record<ServiceArea['kind'], string> = {
   City: 'City',
@@ -34,7 +33,11 @@ const KIND_LABEL: Record<ServiceArea['kind'], string> = {
 export default function ServiceAreaPage() {
   const loader = useCallback((signal: AbortSignal) => getServiceAreas(signal), []);
   const areas = useAsync(loader);
-  const { content } = useSiteContent();
+  const { content, site } = useSiteContent();
+  const structuredData = useMemo(
+    () => graph(organizationSchema(site), breadcrumbSchema(site, CRUMBS)),
+    [site],
+  );
 
   const list = areas.data ?? [];
   const primary = list.filter((a) => a.isPrimary);
@@ -45,10 +48,9 @@ export default function ServiceAreaPage() {
     <>
       <Seo
         title="Service Area"
-        description="Where Kellum's Second Chance Renovations works. Not sure if you are in our area? Ask — we will tell you straight."
+        description="Where Kellum’s Second Chance Renovations works. Not sure if you are in our area? Ask — we will tell you straight."
         path="/service-area"
-        image={editorialMedia.serviceArea.src}
-        structuredData={STRUCTURED_DATA}
+        structuredData={structuredData}
       />
 
       <PageHero
@@ -66,7 +68,7 @@ export default function ServiceAreaPage() {
             Our service area
           </h2>
 
-          {hasSample ? <SampleContentNotice what="areas" className={styles.notice} /> : null}
+          {hasSample ? <SampleContentNotice context="serviceAreas" className={styles.notice} /> : null}
 
           {areas.isLoading ? (
             <LoadingState label="Loading our service area" variant="list" count={4} />

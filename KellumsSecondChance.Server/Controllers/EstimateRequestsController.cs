@@ -15,7 +15,9 @@ namespace KellumsSecondChance.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/estimate-requests")]
-public class EstimateRequestsController(IEstimateRequestService estimates) : ControllerBase
+public class EstimateRequestsController(
+    IEstimateRequestService estimates,
+    IEstimateRequestNotifier notifier) : ControllerBase
 {
     [HttpPost]
     [EnableRateLimiting(RateLimitPolicies.PublicSubmission)]
@@ -31,6 +33,25 @@ public class EstimateRequestsController(IEstimateRequestService estimates) : Con
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
         var result = await estimates.SubmitAsync(dto, ResolveClientIp(), ResolveUserAgent(), ct);
+
+        /*
+         * Tell the business a lead has arrived.
+         *
+         * The lead is ALREADY SAVED at this point and the notifier cannot throw,
+         * so nothing here can cost the business an enquiry. It is awaited rather
+         * than fired and forgotten because the current sender only writes a log
+         * line — fire-and-forget would race the scoped services being disposed
+         * for no benefit.
+         *
+         * WHEN A REAL PROVIDER IS ADDED: an SMTP round trip belongs on a queue,
+         * not on the customer's response. Move the dispatch behind a background
+         * channel at that point; the seam is INotificationSender and nothing
+         * else has to change.
+         */
+        if (result.Outcome == SubmissionOutcome.Accepted && result.Saved is not null)
+        {
+            await notifier.NotifyNewRequestAsync(result.Saved, RequestOrigin(), ct);
+        }
 
         return result.Outcome switch
         {
@@ -55,4 +76,11 @@ public class EstimateRequestsController(IEstimateRequestService estimates) : Con
 
     private string? ResolveUserAgent() =>
         Request.Headers.UserAgent.ToString() is { Length: > 0 } ua ? ua : null;
+
+    /// <summary>
+    /// This request's own origin, used to build a console deep link when
+    /// Notifications:AdminBaseUrl has not been configured.
+    /// </summary>
+    private string? RequestOrigin() =>
+        Request.Host.HasValue ? $"{Request.Scheme}://{Request.Host}" : null;
 }

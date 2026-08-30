@@ -47,7 +47,22 @@
   flex-shrink: 0;
   border-radius: var(--radius-xs);
   margin-inline-end: auto;
+  /* Optical centring: the lockup's baseline sits low because of the wordmark. */
+  margin-block-start: -0.15rem;
 }
+
+/*
+ * The lockup is the only brand element in the bar, so it is allowed to be the
+ * tallest thing in it. It shrinks with the bar on scroll rather than staying
+ * fixed and leaving the compacted header looking empty.
+ */
+.logo img {
+  width: auto;
+  height: 2.75rem;
+  transition: height var(--dur) var(--ease-out);
+}
+
+.scrolled .logo img { width: auto; height: 2.25rem; }
 
 /* The copper hairline under the bar — the site's recurring "seam". */
 .seam {

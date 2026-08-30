@@ -40,7 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return (
       <div className={styles.wrap} data-theme="dark">
         <Container width="narrow" className={styles.inner}>
-          <Logo layout="stacked" markSize={48} still />
+          <Logo size={72} tone="onDark" />
           <h1 className={styles.title}>Something on our end broke.</h1>
           <p className={styles.body}>
             That is on us, not you. Reloading usually fixes it. If it keeps happening, please get in

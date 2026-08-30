@@ -3,6 +3,8 @@ using KellumsSecondChance.Server.Data.Seed;
 using KellumsSecondChance.Server.Domain.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 
 namespace KellumsSecondChance.Server.Tests;
 
@@ -71,4 +73,20 @@ public sealed class TestDatabase : IDisposable
         Db.Dispose();
         _connection.Dispose();
     }
+}
+
+/// <summary>
+/// A named host environment, so validation that behaves differently in
+/// production can be exercised in both directions.
+/// </summary>
+public sealed class TestEnvironment(string environmentName) : IHostEnvironment
+{
+    public string EnvironmentName { get; set; } = environmentName;
+    public string ApplicationName { get; set; } = "KellumsSecondChance.Tests";
+    public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
+    public IFileProvider ContentRootFileProvider { get; set; } =
+        new NullFileProvider();
+
+    public static TestEnvironment Development => new(Environments.Development);
+    public static TestEnvironment Production => new(Environments.Production);
 }

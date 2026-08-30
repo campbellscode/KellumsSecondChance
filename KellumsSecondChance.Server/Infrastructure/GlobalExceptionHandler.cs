@@ -25,6 +25,36 @@ public class GlobalExceptionHandler(
             return true;
         }
 
+        /*
+         * A body larger than the configured request limit is the caller's
+         * problem, not a server fault: Kestrel raises BadHttpRequestException
+         * with a 413 already on it, and without this it would be logged as an
+         * unhandled error and answered with a generic 500.
+         *
+         * §46 wants 413 here, and an owner uploading a 40 MB photograph
+         * straight off a camera deserves to be told the size is the problem.
+         */
+        if (exception is BadHttpRequestException { StatusCode: StatusCodes.Status413PayloadTooLarge })
+        {
+            logger.LogInformation(
+                "Rejected an oversized upload for {Method} {Path}.",
+                httpContext.Request.Method,
+                httpContext.Request.Path);
+
+            httpContext.Response.StatusCode = StatusCodes.Status413PayloadTooLarge;
+            await httpContext.Response.WriteAsJsonAsync(
+                new ProblemDetails
+                {
+                    Title = "That photo is larger than the upload limit.",
+                    Detail = "Most phones can export a smaller copy. Try one under 12 MB.",
+                    Status = StatusCodes.Status413PayloadTooLarge,
+                    Instance = httpContext.Request.Path,
+                },
+                cancellationToken);
+
+            return true;
+        }
+
         var traceId = httpContext.TraceIdentifier;
 
         logger.LogError(

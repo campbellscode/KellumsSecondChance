@@ -14,6 +14,8 @@ public class RenovationServiceConfiguration : IEntityTypeConfiguration<Renovatio
 {
     public void Configure(EntityTypeBuilder<RenovationService> builder)
     {
+        builder.Property(x => x.RowVersion).IsRowVersion();
+
         builder.ToTable("RenovationServices");
 
         builder.Property(x => x.Slug).HasMaxLength(100).IsRequired();
@@ -61,6 +63,8 @@ public class RenovationProjectConfiguration : IEntityTypeConfiguration<Renovatio
 
         builder.PrimitiveCollection(x => x.Highlights).HasMaxLength(2000);
 
+        builder.Property(x => x.RowVersion).IsRowVersion();
+
         builder.HasIndex(x => x.Slug).IsUnique();
         builder.HasIndex(x => new { x.IsActive, x.IsFeatured, x.DisplayOrder });
         builder.HasIndex(x => x.CategorySlug);
@@ -84,8 +88,13 @@ public class RenovationProjectImageConfiguration : IEntityTypeConfiguration<Reno
         builder.Property(x => x.Caption).HasMaxLength(300);
         builder.Property(x => x.PairKey).HasMaxLength(60);
         builder.Property(x => x.Kind).HasConversion<string>().HasMaxLength(20);
+        builder.Property(x => x.StorageKey).HasMaxLength(400);
+        builder.Property(x => x.ContentType).HasMaxLength(100);
 
         builder.HasIndex(x => new { x.RenovationProjectId, x.Kind, x.DisplayOrder });
+        // Deleting a photo checks whether any OTHER row still points at the same
+        // stored file before the physical file is removed.
+        builder.HasIndex(x => x.StorageKey);
     }
 }
 
@@ -134,6 +143,8 @@ public class FaqItemConfiguration : IEntityTypeConfiguration<FaqItem>
 {
     public void Configure(EntityTypeBuilder<FaqItem> builder)
     {
+        builder.Property(x => x.RowVersion).IsRowVersion();
+
         builder.ToTable("FaqItems");
 
         builder.Property(x => x.Question).HasMaxLength(300).IsRequired();
@@ -172,7 +183,13 @@ public class SiteSettingConfiguration : IEntityTypeConfiguration<SiteSetting>
 
         builder.HasKey(x => x.Key);
         builder.Property(x => x.Key).HasMaxLength(80);
-        builder.Property(x => x.Value).HasMaxLength(1000);
+        /*
+         * 4000, not 1000. Most settings are a line of text, but the social
+         * links and the trading hours are stored as JSON, and eight social
+         * profiles at their maximum field lengths serialise to roughly 3.2k —
+         * a payload the validator accepts must be a payload the column holds.
+         */
+        builder.Property(x => x.Value).HasMaxLength(4000);
         builder.Property(x => x.Description).HasMaxLength(300);
     }
 }
@@ -207,10 +224,55 @@ public class EstimateRequestConfiguration : IEntityTypeConfiguration<EstimateReq
         builder.Property(x => x.BudgetRange).HasConversion<string>().HasMaxLength(30);
         builder.Property(x => x.PreferredContactMethod).HasConversion<string>().HasMaxLength(30);
 
+        builder.Property(x => x.RowVersion).IsRowVersion();
+
+        builder
+            .HasMany(x => x.Notes)
+            .WithOne(x => x.EstimateRequest)
+            .HasForeignKey(x => x.EstimateRequestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasMany(x => x.StatusHistory)
+            .WithOne(x => x.EstimateRequest)
+            .HasForeignKey(x => x.EstimateRequestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasIndex(x => x.Reference).IsUnique();
         builder.HasIndex(x => new { x.Status, x.CreatedAtUtc });
         builder.HasIndex(x => x.CreatedAtUtc);
         // Supports the "how many from this source recently" abuse check.
         builder.HasIndex(x => new { x.SubmitterIpHash, x.CreatedAtUtc });
+    }
+}
+
+
+public class EstimateRequestNoteConfiguration : IEntityTypeConfiguration<EstimateRequestNote>
+{
+    public void Configure(EntityTypeBuilder<EstimateRequestNote> builder)
+    {
+        builder.ToTable("EstimateRequestNotes");
+
+        builder.Property(x => x.Note).HasMaxLength(4000).IsRequired();
+        builder.Property(x => x.CreatedByUserId).HasMaxLength(450);
+        builder.Property(x => x.CreatedByDisplayName).HasMaxLength(256);
+
+        builder.HasIndex(x => new { x.EstimateRequestId, x.CreatedAtUtc });
+    }
+}
+
+public class EstimateRequestStatusHistoryConfiguration
+    : IEntityTypeConfiguration<EstimateRequestStatusHistory>
+{
+    public void Configure(EntityTypeBuilder<EstimateRequestStatusHistory> builder)
+    {
+        builder.ToTable("EstimateRequestStatusHistory");
+
+        builder.Property(x => x.PreviousStatus).HasConversion<string>().HasMaxLength(30);
+        builder.Property(x => x.NewStatus).HasConversion<string>().HasMaxLength(30);
+        builder.Property(x => x.ChangedByUserId).HasMaxLength(450);
+        builder.Property(x => x.ChangedByDisplayName).HasMaxLength(256);
+
+        builder.HasIndex(x => new { x.EstimateRequestId, x.ChangedAtUtc });
     }
 }

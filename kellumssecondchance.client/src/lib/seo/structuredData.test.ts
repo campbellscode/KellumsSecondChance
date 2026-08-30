@@ -1,7 +1,31 @@
 import { describe, expect, it } from 'vitest';
 import { faqSchema, organizationSchema, projectSchema, reviewSchema } from './structuredData';
-import { business } from '@/content/business';
+import { deriveSiteContent } from '@/lib/siteContentContext';
+import { sampleSiteContent } from '@/content/sampleContent/siteContent';
 import type { FaqItem, ProjectDetail, Testimonial } from '@/lib/api/types';
+
+/**
+ * The build-time profile: every operational fact is still null, which is
+ * exactly the state the site ships in until somebody fills them in.
+ */
+const blankSite = deriveSiteContent(sampleSiteContent).site;
+
+/** The same profile with real values, as the admin console would supply them. */
+const suppliedSite = deriveSiteContent({
+  ...sampleSiteContent,
+  businessName: 'Test Renovations',
+  phoneDisplay: '(555) 010-0100',
+  phoneE164: '+15550100100',
+  email: 'hello@example.com',
+  addressLine1: '12 Example Street',
+  addressLocality: 'Example City',
+  addressRegion: 'OH',
+  addressPostalCode: '45001',
+  foundedYear: 2011,
+  siteUrl: 'https://example.test',
+  ogImagePath: '/brand/card.png',
+  socialLinks: [{ label: 'Facebook', href: 'https://facebook.test/x', icon: 'facebook' }],
+}).site;
 
 function testimonial(overrides: Partial<Testimonial> = {}): Testimonial {
   return {
@@ -22,52 +46,86 @@ function testimonial(overrides: Partial<Testimonial> = {}): Testimonial {
 
 describe('organizationSchema', () => {
   it('omits contact details the business has not supplied', () => {
-    const schema = organizationSchema() as Record<string, unknown>;
+    const schema = organizationSchema(blankSite) as Record<string, unknown>;
 
     // Publishing a fabricated phone number or address in structured data is
     // worse than publishing it on the page — search engines treat it as a claim.
-    if (business.phone === null) expect(schema.telephone).toBeUndefined();
-    if (business.email === null) expect(schema.email).toBeUndefined();
-    if (business.address === null) expect(schema.address).toBeUndefined();
-    if (business.foundedYear === null) expect(schema.foundingDate).toBeUndefined();
+    expect(schema.telephone).toBeUndefined();
+    expect(schema.email).toBeUndefined();
+    expect(schema.address).toBeUndefined();
+    expect(schema.foundingDate).toBeUndefined();
+    expect(schema.image).toBeUndefined();
+    expect(schema.sameAs).toBeUndefined();
   });
 
   it('always publishes the name and type', () => {
-    const schema = organizationSchema() as Record<string, unknown>;
+    const schema = organizationSchema(blankSite) as Record<string, unknown>;
 
     expect(schema['@type']).toBe('HomeAndConstructionBusiness');
-    expect(schema.name).toBe(business.legalName);
+    expect(schema.name).toBe(blankSite.legalName);
   });
 
-  it('omits sameAs entirely when there are no social profiles', () => {
-    const schema = organizationSchema() as Record<string, unknown>;
+  it('publishes every detail the business HAS supplied', () => {
+    const schema = organizationSchema(suppliedSite) as Record<string, unknown>;
 
-    if (business.social.length === 0) expect(schema.sameAs).toBeUndefined();
+    expect(schema.name).toBe('Test Renovations');
+    expect(schema.telephone).toBe('+15550100100');
+    expect(schema.email).toBe('hello@example.com');
+    expect(schema.foundingDate).toBe('2011');
+    expect(schema.image).toBe('https://example.test/brand/card.png');
+    expect(schema.sameAs).toEqual(['https://facebook.test/x']);
+    expect(schema.address).toEqual({
+      '@type': 'PostalAddress',
+      streetAddress: '12 Example Street',
+      addressLocality: 'Example City',
+      addressRegion: 'OH',
+      postalCode: '45001',
+      addressCountry: 'US',
+    });
+  });
+
+  it('builds every identifier from the console-supplied domain', () => {
+    const schema = organizationSchema(suppliedSite) as Record<string, unknown>;
+
+    // A stale build-time domain in @id or url would fragment the entity graph.
+    expect(schema['@id']).toBe('https://example.test/#organization');
+    expect(schema.url).toBe('https://example.test/');
+  });
+
+  it('refuses a half-supplied address rather than emitting a partial one', () => {
+    const site = deriveSiteContent({
+      ...sampleSiteContent,
+      addressLine1: '12 Example Street',
+      addressLocality: 'Example City',
+      addressRegion: null,
+    }).site;
+
+    expect((organizationSchema(site) as Record<string, unknown>).address).toBeUndefined();
   });
 });
 
 describe('reviewSchema', () => {
   it('emits nothing when there are no reviews', () => {
-    expect(reviewSchema([])).toBeNull();
+    expect(reviewSchema(blankSite, [])).toBeNull();
   });
 
   it('emits nothing when every review is sample content', () => {
     const samples = [testimonial({ isSampleContent: true }), testimonial({ id: 2, isSampleContent: true })];
 
-    expect(reviewSchema(samples)).toBeNull();
+    expect(reviewSchema(blankSite, samples)).toBeNull();
   });
 
   it('emits nothing when even one displayed review is sample content', () => {
     // Marking up a mixed set would tell search engines the placeholder is real.
     const mixed = [testimonial(), testimonial({ id: 2, isSampleContent: true })];
 
-    expect(reviewSchema(mixed)).toBeNull();
+    expect(reviewSchema(blankSite, mixed)).toBeNull();
   });
 
   it('emits an aggregate rating once every review is genuine', () => {
     const real = [testimonial({ rating: 5 }), testimonial({ id: 2, rating: 4 })];
 
-    const schema = reviewSchema(real) as Record<string, never>;
+    const schema = reviewSchema(blankSite, real) as Record<string, never>;
     expect(schema).not.toBeNull();
 
     const aggregate = schema.aggregateRating as unknown as Record<string, unknown>;
@@ -76,7 +134,7 @@ describe('reviewSchema', () => {
   });
 
   it('publishes reviewers as first name plus last initial only', () => {
-    const schema = reviewSchema([testimonial()]) as Record<string, never>;
+    const schema = reviewSchema(blankSite, [testimonial()]) as Record<string, never>;
     const reviews = schema.review as unknown as { author: { name: string } }[];
 
     expect(reviews[0].author.name).toBe('Dana O.');
@@ -160,7 +218,7 @@ function project(overrides: Partial<ProjectDetail> = {}): ProjectDetail {
 
 describe('projectSchema', () => {
   it('marks up a real completed project', () => {
-    const schema = projectSchema(project()) as Record<string, unknown>;
+    const schema = projectSchema(blankSite, project()) as Record<string, unknown>;
 
     expect(schema).not.toBeNull();
     expect(schema['@type']).toBe('CreativeWork');
@@ -170,6 +228,6 @@ describe('projectSchema', () => {
   it('emits nothing for a seeded demonstration case study', () => {
     // A written example marked up as a CreativeWork the business created, with a
     // dateCreated taken from an illustrative date, is a fabricated claim.
-    expect(projectSchema(project({ isSampleContent: true }))).toBeNull();
+    expect(projectSchema(blankSite, project({ isSampleContent: true }))).toBeNull();
   });
 });

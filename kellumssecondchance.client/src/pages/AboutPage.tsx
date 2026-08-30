@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import styles from './AboutPage.module.css';
 import { Seo } from '@/lib/seo/Seo';
@@ -18,7 +19,6 @@ const CRUMBS = [
   { name: 'About', path: '/about' },
 ];
 
-const STRUCTURED_DATA = graph(organizationSchema(), breadcrumbSchema(CRUMBS));
 
 const EXPECTATIONS = [
   {
@@ -48,16 +48,19 @@ const EXPECTATIONS = [
 ];
 
 export default function AboutPage() {
-  const { content } = useSiteContent();
+  const { content, site } = useSiteContent();
+  const structuredData = useMemo(
+    () => graph(organizationSchema(site), breadcrumbSchema(site, CRUMBS)),
+    [site],
+  );
 
   return (
     <>
       <Seo
-        title="About Kellum's"
+        title="About Kellum’s"
         description="Why we called it Second Chance, how we work, and what homeowners can expect when they let us into their house."
         path="/about"
-        image={editorialMedia.about.src}
-        structuredData={STRUCTURED_DATA}
+        structuredData={structuredData}
       />
 
       <PageHero

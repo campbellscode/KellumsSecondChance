@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import styles from './HomePage.module.css';
 import { Seo } from '@/lib/seo/Seo';
@@ -21,10 +21,16 @@ import { SampleContentNotice } from '@/components/ui/SampleContentNotice';
 import { useAsync } from '@/lib/hooks/useAsync';
 import { getProjects, getServices, getTestimonials, getTransformations } from '@/lib/api/endpoints';
 import { business } from '@/content/business';
+import { useSiteContent } from '@/lib/siteContentContext';
 
-const HOME_STRUCTURED_DATA = graph(organizationSchema(), websiteSchema());
 
 export default function HomePage() {
+  const { site } = useSiteContent();
+  const structuredData = useMemo(
+    () => graph(organizationSchema(site), websiteSchema(site)),
+    [site],
+  );
+
   const servicesLoader = useCallback((signal: AbortSignal) => getServices(signal), []);
   const projectsLoader = useCallback(
     (signal: AbortSignal) => getProjects({ featuredOnly: true, take: 3 }, signal),
@@ -54,10 +60,10 @@ export default function HomePage() {
   return (
     <>
       <Seo
-        title={business.legalName}
+        title={site.legalName}
         description={`${business.promise} Kitchen, bathroom, basement and whole-home renovation for people who want the work done properly.`}
         path="/"
-        structuredData={HOME_STRUCTURED_DATA}
+        structuredData={structuredData}
       />
 
       <Hero />
@@ -152,7 +158,7 @@ export default function HomePage() {
           />
 
           {hasSampleProjects ? (
-            <SampleContentNotice what="case studies" className={styles.notice} />
+            <SampleContentNotice context="projects" className={styles.notice} />
           ) : null}
 
           {projects.isLoading ? (
@@ -228,7 +234,7 @@ export default function HomePage() {
             />
           ) : (
             <>
-              {hasSampleReviews ? <SampleContentNotice what="reviews" className={styles.notice} /> : null}
+              {hasSampleReviews ? <SampleContentNotice context="reviews" className={styles.notice} /> : null}
               <div className={styles.reviewGrid}>
                 {reviews.map((testimonial, index) => (
                   <TestimonialCard

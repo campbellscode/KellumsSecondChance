@@ -63,10 +63,11 @@
 .contactValue:hover { color: var(--color-accent-text); }
 
 .contactAddress {
+  display: flex;
+  flex-direction: column;
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   color: var(--color-text);
-  white-space: pre-line;
 }
 
 .noContact {

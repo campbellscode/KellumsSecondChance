@@ -26,7 +26,7 @@ export default function NotFoundPage() {
       <section className={styles.section} data-theme="dark">
         <span className={styles.grid} aria-hidden="true" />
         <Container width="narrow" className={styles.inner}>
-          <LogoMark size={56} still className={styles.mark} />
+          <LogoMark size={52} tone="onDark" className={styles.mark} />
           <Eyebrow className={styles.eyebrow}>Error 404</Eyebrow>
           <h1 className={styles.title}>This page needs a second chance too.</h1>
           <p className={styles.body}>

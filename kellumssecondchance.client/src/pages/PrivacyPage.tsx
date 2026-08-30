@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { LegalPage } from '@/components/marketing/LegalPage';
 import type { LegalSection } from '@/components/marketing/LegalPage';
-import { business } from '@/content/business';
+import { useSiteContent } from '@/lib/siteContentContext';
 
 /**
  * Describes what the application actually does with visitor data — nothing more.
@@ -112,11 +112,12 @@ const SECTIONS: readonly LegalSection[] = [
 ];
 
 export default function PrivacyPage() {
+  const { site } = useSiteContent();
   return (
     <LegalPage
       title="Privacy"
       eyebrow="Privacy notice"
-      description={`How ${business.legalName} handles the information you send through this website.`}
+      description={`How ${site.legalName} handles the information you send through this website.`}
       path="/privacy"
       lead="Short version: we use what you send us to reply to you, and nothing else. Here is the longer version."
       updated="Awaiting business review"

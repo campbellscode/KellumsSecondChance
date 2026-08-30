@@ -6,7 +6,7 @@ import type { ImageAsset } from '@/lib/api/types';
  * ============================================================================
  *
  *  Every file referenced here is a generated architectural rendering, NOT a
- *  photograph of real Kellum's work. They exist so the layouts can be judged
+ *  photograph of real Kellum’s work. They exist so the layouts can be judged
  *  with realistic tone and composition before real photography arrives.
  *
  *  ▸ Regenerate:  node scripts/generate-placeholder-media.mjs

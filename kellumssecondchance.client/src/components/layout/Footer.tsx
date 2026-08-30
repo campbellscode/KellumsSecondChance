@@ -4,12 +4,12 @@ import styles from './Footer.module.css';
 import { Logo } from '@/components/brand/Logo';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
-import { business, formatAddress, isProvided } from '@/content/business';
+import { business, isProvided } from '@/content/business';
 import { footerNav, footerServiceLinks, legalNav } from '@/content/navigation';
 import { useSiteContent } from '@/lib/siteContentContext';
 
 export function Footer() {
-  const { phone, email, content } = useSiteContent();
+  const { phone, email, content, address, site } = useSiteContent();
   const year = new Date().getFullYear();
 
   return (
@@ -17,7 +17,8 @@ export function Footer() {
       <Container width="wide">
         <div className={styles.top}>
           <div className={styles.brandBlock}>
-            <Logo layout="stacked" markSize={44} still />
+            <Logo size={92} tone="onDark" className={styles.footerLogo} />
+            <p className={styles.footerTagline}>{site.tagline}</p>
             <p className={styles.pitch}>{business.promise}</p>
             <Button as="link" to="/request-estimate" iconRight={<ArrowUpRight size={17} />}>
               Give Your Home Its Second Chance
@@ -77,11 +78,15 @@ export function Footer() {
                     </a>
                   </li>
                 ) : null}
-                {isProvided(business.address) ? (
+                {address ? (
                   <li>
                     <p className={styles.contactText}>
                       <MapPin size={15} strokeWidth={1.9} aria-hidden="true" />
-                      <span className={styles.address}>{formatAddress(business.address)}</span>
+                      <span className={styles.address}>
+                        {address.lines.map((line) => (
+                          <span key={line}>{line}</span>
+                        ))}
+                      </span>
                     </p>
                   </li>
                 ) : null}
@@ -107,15 +112,24 @@ export function Footer() {
                 </li>
               </ul>
 
-              <h2 className={styles.columnTitle}>Hours</h2>
-              <ul className={styles.hoursList}>
-                {business.officeHours.map((entry) => (
-                  <li key={entry.label}>
-                    <span className={styles.hoursLabel}>{entry.label}</span>
-                    <span className={styles.hoursValue}>{entry.hours}</span>
-                  </li>
-                ))}
-              </ul>
+              {/*
+                Hours appear only once somebody has entered them. Printing
+                invented opening times is how a homeowner ends up outside a
+                locked door on a Saturday morning.
+              */}
+              {content.officeHours.length > 0 ? (
+                <>
+                  <h2 className={styles.columnTitle}>Hours</h2>
+                  <ul className={styles.hoursList}>
+                    {content.officeHours.map((entry) => (
+                      <li key={entry.label}>
+                        <span className={styles.hoursLabel}>{entry.label}</span>
+                        <span className={styles.hoursValue}>{entry.hours}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
 
               {content.socialLinks.length > 0 ? (
                 <ul className={styles.social}>
@@ -140,7 +154,7 @@ export function Footer() {
 
         <div className={styles.bottom}>
           <p className={styles.copyright}>
-            © {year} {business.legalName}. All rights reserved.
+            © {year} {site.legalName}. All rights reserved.
           </p>
 
           {/* Licence and insurance render only once the business supplies them. */}

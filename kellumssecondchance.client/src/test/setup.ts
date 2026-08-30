@@ -48,3 +48,30 @@ if (!Element.prototype.setPointerCapture) {
 }
 
 window.scrollTo = () => {};
+
+/*
+ * jsdom parses <dialog> but implements none of its behaviour, so showModal()
+ * throws. The admin console builds every confirmation and record editor on the
+ * native element — for the focus trap, the top layer and Escape — so without
+ * this, none of those screens can be tested at all.
+ *
+ * The shim is deliberately minimal: open/close the `open` attribute, and raise
+ * `cancel` then `close` for Escape, which is the contract Dialog.tsx relies on.
+ */
+if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.showModal) {
+  HTMLDialogElement.prototype.show = function show() {
+    this.open = true;
+  };
+
+  HTMLDialogElement.prototype.showModal = function showModal() {
+    this.open = true;
+    this.setAttribute('open', '');
+  };
+
+  HTMLDialogElement.prototype.close = function close(returnValue?: string) {
+    this.open = false;
+    this.removeAttribute('open');
+    if (returnValue !== undefined) this.returnValue = returnValue;
+    this.dispatchEvent(new Event('close'));
+  };
+}

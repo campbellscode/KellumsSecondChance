@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { business } from '@/content/business';
+import { useSiteContent } from '@/lib/siteContentContext';
 import { SCHEMA_CONTEXT } from './structuredData';
 
 export interface SeoProps {
@@ -30,6 +30,10 @@ function upsertMeta(selector: string, attrs: Record<string, string>) {
   for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
 }
 
+function removeMeta(selector: string) {
+  document.head.querySelector(selector)?.remove();
+}
+
 function upsertLink(rel: string, href: string) {
   let el = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
   if (!el) {
@@ -58,10 +62,20 @@ export function Seo({
   noIndex = false,
   structuredData,
 }: SeoProps) {
-  const fullTitle = title === business.legalName ? title : `${title} | ${business.legalName}`;
-  const canonical = `${business.siteUrl}${path === '/' ? '/' : path.replace(/\/$/, '')}`;
-  const imageUrl = `${business.siteUrl}${image ?? business.ogImagePath}`;
-  const alt = imageAlt ?? `${business.legalName} — renovation work`;
+  /*
+   * Read from the live profile, not from a build-time constant: the canonical
+   * domain and the sharing image are both set in the admin console, and a page
+   * that keeps announcing the old ones after they change is a real SEO fault.
+   */
+  const { site } = useSiteContent();
+
+  const fullTitle = title === site.legalName ? title : `${title} | ${site.legalName}`;
+  const canonical = `${site.siteUrl}${path === '/' ? '/' : path.replace(/\/$/, '')}`;
+  // A page may supply its own image (a project cover); otherwise the shared
+  // social card, which may not exist yet.
+  const imagePath = image ?? site.ogImagePath;
+  const imageUrl = imagePath === null ? null : `${site.siteUrl}${imagePath}`;
+  const alt = imageAlt ?? `${site.legalName} — renovation work`;
 
   useEffect(() => {
     document.title = fullTitle;
@@ -77,17 +91,31 @@ export function Seo({
     upsertMeta('meta[property="og:description"]', { property: 'og:description', content: description });
     upsertMeta('meta[property="og:type"]', { property: 'og:type', content: type });
     upsertMeta('meta[property="og:url"]', { property: 'og:url', content: canonical });
-    upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name', content: business.legalName });
-    upsertMeta('meta[property="og:image"]', { property: 'og:image', content: imageUrl });
-    upsertMeta('meta[property="og:image:alt"]', { property: 'og:image:alt', content: alt });
+    upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name', content: site.legalName });
     upsertMeta('meta[property="og:locale"]', { property: 'og:locale', content: 'en_US' });
 
-    upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' });
     upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: fullTitle });
     upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description', content: description });
-    upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: imageUrl });
-    upsertMeta('meta[name="twitter:image:alt"]', { name: 'twitter:image:alt', content: alt });
-  }, [fullTitle, description, canonical, imageUrl, alt, type, noIndex]);
+
+    /*
+     * No image tags at all until a real raster card exists. Announcing an
+     * og:image that 404s is worse than announcing none: the platform shows a
+     * broken card instead of falling back to a clean text summary.
+     */
+    if (imageUrl) {
+      upsertMeta('meta[property="og:image"]', { property: 'og:image', content: imageUrl });
+      upsertMeta('meta[property="og:image:alt"]', { property: 'og:image:alt', content: alt });
+      upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' });
+      upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: imageUrl });
+      upsertMeta('meta[name="twitter:image:alt"]', { name: 'twitter:image:alt', content: alt });
+    } else {
+      upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary' });
+      removeMeta('meta[property="og:image"]');
+      removeMeta('meta[property="og:image:alt"]');
+      removeMeta('meta[name="twitter:image"]');
+      removeMeta('meta[name="twitter:image:alt"]');
+    }
+  }, [fullTitle, description, canonical, imageUrl, alt, type, noIndex, site.legalName]);
 
   useEffect(() => {
     if (!structuredData || structuredData.length === 0) return;

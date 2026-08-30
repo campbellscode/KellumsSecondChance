@@ -6,7 +6,7 @@ import { serviceImage } from '@/content/media';
  *  SAMPLE SERVICE CATALOGUE — EDITABLE BUSINESS CONTENT
  * ============================================================================
  *
- *  These are CANDIDATE services, not confirmed offerings. Kellum's has not yet
+ *  These are CANDIDATE services, not confirmed offerings. Kellum’s has not yet
  *  confirmed which of these it takes on, so before launch someone at the
  *  business must review this list and remove anything they do not do.
  *
@@ -50,7 +50,7 @@ function build(
     bestFor,
     considerations,
     relatedProjectSlugs,
-    metaTitle: `${name} | Kellum's Second Chance Renovations`,
+    metaTitle: `${name} | Kellum’s Second Chance Renovations`,
     metaDescription: summary,
   };
 }

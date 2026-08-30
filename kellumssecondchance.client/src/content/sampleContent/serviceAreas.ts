@@ -5,7 +5,7 @@ import type { ServiceArea } from '@/lib/api/types';
  *  SAMPLE SERVICE AREA — PLACEHOLDER GEOGRAPHY
  * ============================================================================
  *
- *  ⚠ These are NOT confirmed service areas. Kellum's has not supplied its
+ *  ⚠ These are NOT confirmed service areas. Kellum’s has not supplied its
  *    coverage yet, so these entries use deliberately generic names and are all
  *    flagged `isSampleContent: true`. The Service Area page labels them.
  *

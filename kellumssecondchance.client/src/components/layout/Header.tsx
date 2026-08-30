@@ -5,7 +5,6 @@ import styles from './Header.module.css';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/Button';
 import { primaryNav } from '@/content/navigation';
-import { business } from '@/content/business';
 import { useSiteContent } from '@/lib/siteContentContext';
 import { useStickyHeader } from '@/lib/hooks/useStickyHeader';
 import { useScrollLock } from '@/lib/hooks/useScrollLock';
@@ -13,7 +12,7 @@ import { cn } from '@/lib/cn';
 
 export function Header() {
   const { isScrolled, isHidden } = useStickyHeader();
-  const { phone } = useSiteContent();
+  const { phone, site } = useSiteContent();
   const location = useLocation();
   const panelRef = useRef<HTMLDivElement | null>(null);
   const toggleRef = useRef<HTMLButtonElement | null>(null);
@@ -90,8 +89,8 @@ export function Header() {
       )}
     >
       <div className={styles.bar}>
-        <Link to="/" className={styles.brand} aria-label={`${business.legalName} — home`}>
-          <Logo markSize={32} />
+        <Link to="/" className={styles.brand} aria-label={`${site.legalName} — home`}>
+          <Logo size={44} className={styles.logo} />
         </Link>
 
         <nav className={styles.nav} aria-label="Primary">
@@ -115,7 +114,7 @@ export function Header() {
             <a className={styles.phone} href={phone.href}>
               <Phone size={15} strokeWidth={2} aria-hidden="true" />
               <span className={styles.phoneNumber}>{phone.display}</span>
-              <span className="u-visually-hidden">Call {business.legalName}</span>
+              <span className="u-visually-hidden">Call {site.legalName}</span>
             </a>
           ) : null}
 
@@ -183,7 +182,7 @@ export function Header() {
               Other ways to reach us
             </Button>
           )}
-          <p className={styles.drawerTagline}>{business.tagline}</p>
+          <p className={styles.drawerTagline}>{site.tagline}</p>
         </div>
       </div>
 

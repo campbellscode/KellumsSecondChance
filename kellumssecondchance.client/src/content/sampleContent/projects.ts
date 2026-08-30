@@ -7,7 +7,7 @@ import { projectImage } from '@/content/media';
  * ============================================================================
  *
  *  These six case studies are WRITTEN EXAMPLES, not records of completed
- *  Kellum's jobs. Street names, dates and details are illustrative. They exist
+ *  Kellum’s jobs. Street names, dates and details are illustrative. They exist
  *  to show how a real case study will look and read.
  *
  *  Every record carries `isSampleContent` on the server so the UI can label the
@@ -84,7 +84,7 @@ export const sampleProjects: readonly ProjectDetail[] = [
       image('maple-street-kitchen', 'gallery-1', 'Gallery', 'New hardwood flooring carried from the kitchen into the dining room.', 3, 'portrait', 'Flooring runs unbroken between the two rooms.'),
       image('maple-street-kitchen', 'gallery-2', 'Gallery', 'Painted trim and panelling detail beside the new cabinet run.', 4, 'landscape'),
     ],
-    metaTitle: "Maple Street Kitchen Remodel | Kellum's Second Chance Renovations",
+    metaTitle: "Maple Street Kitchen Remodel | Kellum’s Second Chance Renovations",
     metaDescription:
       'A closed galley kitchen with failing cabinets rebuilt into an open, working room with an island — a Kellum’s Second Chance Renovations case study.',
   },
@@ -132,7 +132,7 @@ export const sampleProjects: readonly ProjectDetail[] = [
       image('harborview-primary-bath', 'gallery-1', 'Gallery', 'New painted trim and panelling beside the vanity wall.', 3, 'portrait'),
       image('harborview-primary-bath', 'gallery-2', 'Gallery', 'New tile flooring running to a fresh baseboard.', 4, 'landscape'),
     ],
-    metaTitle: "Harborview Primary Bath Renovation | Kellum's Second Chance Renovations",
+    metaTitle: "Harborview Primary Bath Renovation | Kellum’s Second Chance Renovations",
     metaDescription:
       'A bathroom taken back to framing after years of hidden water damage, rebuilt with proper waterproofing — a Kellum’s case study.',
   },
@@ -180,7 +180,7 @@ export const sampleProjects: readonly ProjectDetail[] = [
       image('oakridge-basement', 'gallery-1', 'Gallery', 'A renovated living area with a rebuilt feature wall and new flooring.', 3, 'portrait'),
       image('oakridge-basement', 'gallery-2', 'Gallery', 'Below-grade rated flooring installed wall to wall.', 4, 'landscape'),
     ],
-    metaTitle: "Oakridge Basement Finishing | Kellum's Second Chance Renovations",
+    metaTitle: "Oakridge Basement Finishing | Kellum’s Second Chance Renovations",
     metaDescription:
       'An unfinished storage basement turned into the family’s main living space — a Kellum’s Second Chance Renovations case study.',
   },
@@ -228,7 +228,7 @@ export const sampleProjects: readonly ProjectDetail[] = [
       image('brookfield-living-room', 'gallery-1', 'Gallery', 'New crown moulding and panelling matched to the home’s original profiles.', 3, 'portrait', 'Profiles milled to match the upstairs originals.'),
       image('brookfield-living-room', 'gallery-2', 'Gallery', 'New hardwood flooring running the length of the main floor.', 4, 'landscape'),
     ],
-    metaTitle: "Brookfield Living Room Renovation | Kellum's Second Chance Renovations",
+    metaTitle: "Brookfield Living Room Renovation | Kellum’s Second Chance Renovations",
     metaDescription:
       'A chopped-up 1950s main floor opened into one room with matched trim and a rebuilt fireplace — a Kellum’s case study.',
   },
@@ -275,7 +275,7 @@ export const sampleProjects: readonly ProjectDetail[] = [
       image('cedar-lane-deck', 'after', 'After', 'The rebuilt deck with new boards, a solid railing and clean hardware.', 2, 'landscape', 'Same framing where it was sound, everything else new.', 'main'),
       image('cedar-lane-deck', 'gallery-1', 'Gallery', 'New exterior trim and railing detail at the stair.', 3, 'portrait'),
     ],
-    metaTitle: "Cedar Lane Deck Rebuild | Kellum's Second Chance Renovations",
+    metaTitle: "Cedar Lane Deck Rebuild | Kellum’s Second Chance Renovations",
     metaDescription:
       'A failing deck rebuilt on sound existing framing with proper flashing and hidden fasteners — a Kellum’s case study.',
   },
@@ -323,7 +323,7 @@ export const sampleProjects: readonly ProjectDetail[] = [
       image('rental-turnover-duplex', 'gallery-1', 'Gallery', 'New luxury vinyl plank flooring installed throughout the unit.', 3, 'portrait'),
       image('rental-turnover-duplex', 'gallery-2', 'Gallery', 'The refreshed kitchen with refaced cabinets and a new counter.', 4, 'landscape'),
     ],
-    metaTitle: "Duplex Rental Turnover | Kellum's Second Chance Renovations",
+    metaTitle: "Duplex Rental Turnover | Kellum’s Second Chance Renovations",
     metaDescription:
       'A full rental turnover completed inside an eleven-day vacancy window — a Kellum’s Second Chance Renovations case study.',
   },

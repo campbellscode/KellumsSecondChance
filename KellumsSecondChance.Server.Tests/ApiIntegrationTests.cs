@@ -190,16 +190,101 @@ public class ApiIntegrationTests(KellumsApiFactory factory) : IClassFixture<Kell
         Assert.StartsWith("KSC-", result.Reference);
     }
 
+    /* ------------------------------------------------------- caching */
+
+    /// <summary>
+    /// Conditional requests on the public content endpoints.
+    ///
+    /// The ETag comes from IContentVersion, which every admin write bumps. The
+    /// combination is what stops an owner publishing a project and then being
+    /// unable to see it for the length of the cache window.
+    /// </summary>
+    [Theory]
+    [InlineData("/api/services")]
+    [InlineData("/api/projects")]
+    [InlineData("/api/testimonials")]
+    [InlineData("/api/faqs")]
+    [InlineData("/api/service-areas")]
+    [InlineData("/api/site-content")]
+    public async Task Public_content_carries_an_etag_and_a_short_revalidating_cache(string path)
+    {
+        var response = await Client().GetAsync(path);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var etag = response.Headers.ETag;
+        Assert.NotNull(etag);
+
+        var cacheControl = response.Headers.CacheControl;
+        Assert.NotNull(cacheControl);
+        Assert.True(cacheControl.Public);
+        Assert.True(cacheControl.MustRevalidate);
+        // Long enough to be worth having, short enough that a publish shows up.
+        Assert.True(cacheControl.MaxAge <= TimeSpan.FromMinutes(5));
+    }
+
+    [Fact]
+    public async Task A_matching_if_none_match_gets_an_empty_304()
+    {
+        var client = Client();
+
+        var first = await client.GetAsync("/api/services");
+        var etag = first.Headers.ETag!.ToString();
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/services");
+        request.Headers.Add("If-None-Match", etag);
+        var second = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.NotModified, second.StatusCode);
+        Assert.Empty(await second.Content.ReadAsByteArrayAsync());
+    }
+
+    [Fact]
+    public async Task A_wildcard_if_none_match_is_honoured()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/faqs");
+        request.Headers.Add("If-None-Match", "*");
+
+        var response = await Client().SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.NotModified, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task A_stale_if_none_match_gets_the_full_response()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/services");
+        request.Headers.Add("If-None-Match", "\"something-else-entirely\"");
+
+        var response = await Client().SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Admin_responses_are_never_cached()
+    {
+        // A lead list held in a shared cache would be a data-disclosure bug.
+        var response = await Client().GetAsync("/api/admin/auth/antiforgery");
+
+        Assert.Equal("no-store", response.Headers.CacheControl?.ToString());
+    }
+
     /* ------------------------------------------------------------ admin */
 
     [Theory]
-    [InlineData("/api/admin/estimate-requests")]
     [InlineData("/api/admin/auth/me")]
-    [InlineData("/api/admin/content/services")]
-    [InlineData("/api/admin/content/projects")]
-    [InlineData("/api/admin/content/testimonials")]
-    [InlineData("/api/admin/content/faqs")]
-    [InlineData("/api/admin/content/service-areas")]
+    [InlineData("/api/admin/dashboard")]
+    [InlineData("/api/admin/estimate-requests")]
+    [InlineData("/api/admin/estimate-requests/1")]
+    [InlineData("/api/admin/estimate-requests/project-types")]
+    [InlineData("/api/admin/projects")]
+    [InlineData("/api/admin/projects/1")]
+    [InlineData("/api/admin/services")]
+    [InlineData("/api/admin/testimonials")]
+    [InlineData("/api/admin/faqs")]
+    [InlineData("/api/admin/service-areas")]
+    [InlineData("/api/admin/site-settings")]
     public async Task Admin_endpoints_reject_anonymous_reads_with_401(string path)
     {
         var response = await Client().GetAsync(path);
@@ -208,15 +293,111 @@ public class ApiIntegrationTests(KellumsApiFactory factory) : IClassFixture<Kell
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    [Fact]
-    public async Task Admin_mutations_reject_anonymous_callers()
+    /// <summary>
+    /// Every state-changing admin endpoint, called anonymously.
+    ///
+    /// This is the test that matters most in the whole suite. Hiding a button in
+    /// the console protects nobody: the server has to refuse. A 401 here also
+    /// proves authorisation runs BEFORE antiforgery and before model binding —
+    /// an anonymous caller must not be able to tell a valid payload from an
+    /// invalid one, or a real id from a missing one.
+    /// </summary>
+    [Theory]
+    // Leads
+    [InlineData("PUT", "/api/admin/estimate-requests/1/status")]
+    [InlineData("POST", "/api/admin/estimate-requests/1/notes")]
+    [InlineData("DELETE", "/api/admin/estimate-requests/1/notes/1")]
+    // Projects
+    [InlineData("POST", "/api/admin/projects")]
+    [InlineData("PUT", "/api/admin/projects/1")]
+    [InlineData("DELETE", "/api/admin/projects/1")]
+    // Project photographs
+    [InlineData("POST", "/api/admin/projects/1/images")]
+    [InlineData("PUT", "/api/admin/projects/1/images/1")]
+    [InlineData("DELETE", "/api/admin/projects/1/images/1")]
+    [InlineData("POST", "/api/admin/projects/1/images/reorder")]
+    [InlineData("POST", "/api/admin/projects/1/images/1/cover")]
+    [InlineData("POST", "/api/admin/projects/1/pairs")]
+    [InlineData("DELETE", "/api/admin/projects/1/pairs/pair-abc")]
+    // Catalogue
+    [InlineData("POST", "/api/admin/services")]
+    [InlineData("PUT", "/api/admin/services/1")]
+    [InlineData("DELETE", "/api/admin/services/1")]
+    [InlineData("POST", "/api/admin/testimonials")]
+    [InlineData("PUT", "/api/admin/testimonials/1")]
+    [InlineData("DELETE", "/api/admin/testimonials/1")]
+    [InlineData("POST", "/api/admin/faqs")]
+    [InlineData("PUT", "/api/admin/faqs/1")]
+    [InlineData("DELETE", "/api/admin/faqs/1")]
+    [InlineData("POST", "/api/admin/service-areas")]
+    [InlineData("PUT", "/api/admin/service-areas/1")]
+    [InlineData("DELETE", "/api/admin/service-areas/1")]
+    // Business details
+    [InlineData("PUT", "/api/admin/site-settings")]
+    public async Task Every_admin_mutation_rejects_anonymous_callers(string method, string path)
     {
-        var response = await Client().PatchAsJsonAsync(
-            "/api/admin/estimate-requests/1",
-            new { status = "Won" },
-            CancellationToken.None);
+        var request = new HttpRequestMessage(new HttpMethod(method), path);
+        if (method is "POST" or "PUT")
+        {
+            request.Content = JsonContent.Create(new { });
+        }
+
+        var response = await Client().SendAsync(request);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    /// <summary>
+    /// The same endpoints again, this time WITH a valid antiforgery token.
+    ///
+    /// A token is issued to anyone — it defends against cross-site forgery, not
+    /// against being signed out. Holding one must never substitute for being an
+    /// administrator.
+    /// </summary>
+    [Theory]
+    [InlineData("POST", "/api/admin/projects")]
+    [InlineData("PUT", "/api/admin/site-settings")]
+    [InlineData("POST", "/api/admin/testimonials")]
+    [InlineData("PUT", "/api/admin/estimate-requests/1/status")]
+    public async Task A_valid_antiforgery_token_does_not_stand_in_for_signing_in(
+        string method,
+        string path)
+    {
+        var client = Client();
+        var tokens = await client.GetFromJsonAsync<AntiforgeryResponse>("/api/admin/auth/antiforgery");
+        Assert.NotNull(tokens);
+
+        var request = new HttpRequestMessage(new HttpMethod(method), path)
+        {
+            Content = JsonContent.Create(new { }),
+        };
+        request.Headers.Add("X-CSRF-TOKEN", tokens.Token);
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    /// <summary>
+    /// Internal lead notes must never leak through a public route.
+    ///
+    /// The estimate-request controller is the one place where staff-only text
+    /// lives next to a public POST endpoint, so the public surface is checked
+    /// explicitly rather than assumed.
+    /// </summary>
+    [Theory]
+    [InlineData("/api/estimate-requests/1")]
+    [InlineData("/api/estimate-requests/1/notes")]
+    [InlineData("/api/estimate-requests")]
+    public async Task Lead_details_are_not_reachable_without_signing_in(string path)
+    {
+        var response = await Client().GetAsync(path);
+
+        Assert.True(
+            response.StatusCode is HttpStatusCode.NotFound
+                or HttpStatusCode.Unauthorized
+                or HttpStatusCode.MethodNotAllowed,
+            $"{path} answered {(int)response.StatusCode}; internal lead data must never be public.");
     }
 
     [Fact]

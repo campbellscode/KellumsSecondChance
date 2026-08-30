@@ -39,7 +39,7 @@ export default function FaqPage() {
   const [active, setActive] = useState('all');
   const loader = useCallback((signal: AbortSignal) => getFaqs(signal), []);
   const faqs = useAsync(loader);
-  const { phone, email } = useSiteContent();
+  const { phone, email, site } = useSiteContent();
 
   /*
    * Defence in depth. The API already withholds items awaiting a business
@@ -59,15 +59,15 @@ export default function FaqPage() {
    * view — the markup should describe the page's content, not the current UI state.
    */
   const structuredData = useMemo(
-    () => graph(organizationSchema(), breadcrumbSchema(CRUMBS), faqSchema(published)),
-    [published],
+    () => graph(organizationSchema(site), breadcrumbSchema(site, CRUMBS), faqSchema(published)),
+    [site, published],
   );
 
   return (
     <>
       <Seo
         title="Frequently Asked Questions"
-        description="Straight answers about estimates, scheduling, living in your home during work, changes, payments, materials and how a Kellum's project finishes."
+        description="Straight answers about estimates, scheduling, living in your home during work, changes, payments, materials and how a Kellum’s project finishes."
         path="/faq"
         structuredData={structuredData}
       />

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Check, Clock, Lock, MessageCircle } from 'lucide-react';
 import styles from './EstimatePage.module.css';
 import { Seo } from '@/lib/seo/Seo';
@@ -12,7 +13,6 @@ const CRUMBS = [
   { name: 'Request an Estimate', path: '/request-estimate' },
 ];
 
-const STRUCTURED_DATA = graph(organizationSchema(), breadcrumbSchema(CRUMBS));
 
 const REASSURANCE = [
   {
@@ -39,7 +39,11 @@ const WHAT_HAPPENS = [
 ];
 
 export default function EstimatePage() {
-  const { phone, email } = useSiteContent();
+  const { phone, email, site } = useSiteContent();
+  const structuredData = useMemo(
+    () => graph(organizationSchema(site), breadcrumbSchema(site, CRUMBS)),
+    [site],
+  );
 
   return (
     <>
@@ -47,7 +51,7 @@ export default function EstimatePage() {
         title="Request an Estimate"
         description="Tell us what needs a second chance. Four short steps, a real reply, and a written plan before anything starts."
         path="/request-estimate"
-        structuredData={STRUCTURED_DATA}
+        structuredData={structuredData}
       />
 
       <PageHero

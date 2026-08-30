@@ -1,7 +1,8 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { LegalPage } from '@/components/marketing/LegalPage';
 import type { LegalSection } from '@/components/marketing/LegalPage';
-import { business } from '@/content/business';
+import { useSiteContent } from '@/lib/siteContentContext';
 
 /**
  * Website terms only — deliberately narrow.
@@ -10,14 +11,21 @@ import { business } from '@/content/business';
  * contractual promise about renovation work, because the business has not
  * supplied those terms and inventing them would be materially misleading.
  */
-const SECTIONS: readonly LegalSection[] = [
+/**
+ * A function of the business name rather than a constant.
+ *
+ * The name is editable at /admin/site-settings, and terms that keep naming a
+ * company the business has stopped being are worse than no terms at all.
+ */
+function buildSections(businessName: string): readonly LegalSection[] {
+  return [
   {
     id: 'about',
     heading: 'About these terms',
     body: (
       <p>
         These terms cover your use of this website. They do not form a contract for renovation work.
-        Any work {business.legalName} carries out is governed by a separate written agreement made
+        Any work {businessName} carries out is governed by a separate written agreement made
         directly with you before the work begins.
       </p>
     ),
@@ -84,7 +92,7 @@ const SECTIONS: readonly LegalSection[] = [
     heading: 'Site content and images',
     body: (
       <p>
-        The text, layout, branding and images on this site belong to {business.legalName} unless
+        The text, layout, branding and images on this site belong to {businessName} unless
         stated otherwise. You are welcome to link to the site or share pages. Please do not
         reproduce our project photography or copy elsewhere without asking first.
       </p>
@@ -108,21 +116,24 @@ const SECTIONS: readonly LegalSection[] = [
       <p>
         If anything here is unclear, ask us through the <Link to="/contact">contact page</Link>.
       </p>
-    ),
-  },
-];
+      ),
+    },
+  ];
+}
 
 export default function TermsPage() {
+  const { site } = useSiteContent();
+  const sections = useMemo(() => buildSections(site.legalName), [site.legalName]);
   return (
     <LegalPage
       title="Terms"
       eyebrow="Website terms"
-      description={`Terms covering use of the ${business.legalName} website.`}
+      description={`Terms covering use of the ${site.legalName} website.`}
       path="/terms"
       lead="These cover using this website. The agreement for actual renovation work is a separate written document you get before anything starts."
       updated="Awaiting business review"
       reviewNotice="These terms cover website use only. Contract terms, warranty terms, payment terms and any consumer-protection obligations for renovation work must be drafted with a legal adviser before launch."
-      sections={SECTIONS}
+      sections={sections}
     />
   );
 }

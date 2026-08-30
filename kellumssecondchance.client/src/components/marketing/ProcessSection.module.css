@@ -61,20 +61,20 @@
   padding-block-start: 0.15rem;
 }
 
+/* Each step is marked with the logo's roof pitch. */
 .dot {
   position: absolute;
   inset-inline-start: 0.5rem;
-  inset-block-start: 0.55rem;
-  width: 9px;
-  height: 9px;
+  inset-block-start: 0.45rem;
+  width: 0.85rem;
+  height: 0.6rem;
   translate: -50% 0;
-  background-color: var(--ink-900);
-  border: 1.5px solid var(--copper-500);
-  rotate: 45deg;
+  background-color: var(--copper-500);
+  clip-path: polygon(50% 0%, 100% 100%, 78% 100%, 50% 42%, 22% 100%, 0% 100%);
   transition: background-color var(--dur) var(--ease-out), scale var(--dur) var(--ease-spring);
 }
 
-.step:hover .dot { background-color: var(--copper-400); scale: 1.25; }
+.step:hover .dot { background-color: var(--copper-300); scale: 1.2; }
 
 .number {
   margin-inline-start: 1.85rem;

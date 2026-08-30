@@ -54,6 +54,25 @@ public class EstimateRequestServiceTests : IDisposable
     /* ------------------------------------------------------ persistence */
 
     [Fact]
+    public async Task An_accepted_submission_hands_back_the_saved_lead_for_notification()
+    {
+        // The submission endpoint alerts the business from this. A decoy result
+        // must NOT carry one, or a caught bot would generate a notification.
+        var accepted = await _service.SubmitAsync(ValidRequest(), "203.0.113.7", null);
+
+        Assert.Equal(SubmissionOutcome.Accepted, accepted.Outcome);
+        Assert.NotNull(accepted.Saved);
+        Assert.Equal(accepted.Result!.Reference, accepted.Saved.Reference);
+
+        var honeypot = ValidRequest();
+        honeypot.CompanyWebsite = "http://spam.example";
+        var rejected = await _service.SubmitAsync(honeypot, "203.0.113.8", null);
+
+        Assert.Equal(SubmissionOutcome.RejectedAsAutomated, rejected.Outcome);
+        Assert.Null(rejected.Saved);
+    }
+
+    [Fact]
     public async Task Submitting_a_valid_request_persists_it_with_a_reference()
     {
         var result = await _service.SubmitAsync(ValidRequest(), "203.0.113.7", "TestAgent/1.0");
@@ -220,15 +239,18 @@ public class EstimateRequestServiceTests : IDisposable
 
     /* ---------------------------------------------------------- admin -- */
 
+    private static readonly AdminActor Actor = new("user-1", "Sam Kellum");
+
     [Fact]
-    public async Task Listing_pages_and_orders_newest_first()
+    public async Task Searching_pages_and_orders_newest_first()
     {
         for (var i = 0; i < 5; i++)
         {
             await _service.SubmitAsync(ValidRequest(), $"203.0.113.{i}", null);
         }
 
-        var page = await _service.ListAsync(null, null, 1, 2);
+        var page = await _service.SearchAsync(
+            null, null, null, null, null, EstimateRequestSort.NewestFirst, 1, 2);
 
         Assert.Equal(2, page.Items.Count);
         Assert.Equal(5, page.TotalCount);
@@ -237,78 +259,171 @@ public class EstimateRequestServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task Listing_clamps_an_absurd_page_size()
+    public async Task Searching_clamps_an_absurd_page_size()
     {
         await _service.SubmitAsync(ValidRequest(), "203.0.113.7", null);
 
-        var page = await _service.ListAsync(null, null, 0, 5000);
+        var page = await _service.SearchAsync(
+            null, null, null, null, null, EstimateRequestSort.NewestFirst, 0, 5000);
 
         Assert.Equal(1, page.Page);
         Assert.Equal(100, page.PageSize);
     }
 
     [Fact]
-    public async Task Listing_filters_by_status()
+    public async Task Searching_filters_by_status()
     {
         var first = await _service.SubmitAsync(ValidRequest(), "203.0.113.1", null);
         await _service.SubmitAsync(ValidRequest(), "203.0.113.2", null);
 
         var target = await _fixture.Db.EstimateRequests
             .SingleAsync(r => r.Reference == first.Result!.Reference);
-        await _service.UpdateAsync(
-            target.Id,
-            new UpdateEstimateRequestDto { Status = EstimateRequestStatus.Won },
-            CancellationToken.None);
+        await _service.ChangeStatusAsync(target.Id, EstimateRequestStatus.Won, null, Actor);
 
-        var won = await _service.ListAsync(EstimateRequestStatus.Won, null, 1, 20);
+        var won = await _service.SearchAsync(
+            EstimateRequestStatus.Won, null, null, null, null, EstimateRequestSort.NewestFirst, 1, 20);
 
         Assert.Single(won.Items);
         Assert.Equal(EstimateRequestStatus.Won, won.Items[0].Status);
     }
 
     [Fact]
-    public async Task Listing_searches_by_reference_and_email()
+    public async Task Searching_matches_reference_email_postcode_and_description()
     {
         var created = await _service.SubmitAsync(ValidRequest(), "203.0.113.7", null);
 
-        var byReference = await _service.ListAsync(null, created.Result!.Reference, 1, 20);
-        var byEmail = await _service.ListAsync(null, "dana@example.com", 1, 20);
+        var byReference = await Search(created.Result!.Reference);
+        var byEmail = await Search("dana@example.com");
+        var byPostcode = await Search("12345");
+        var byDescription = await Search("eighties");
 
         Assert.Single(byReference.Items);
         Assert.Single(byEmail.Items);
+        Assert.Single(byPostcode.Items);
+        Assert.Single(byDescription.Items);
     }
 
     [Fact]
-    public async Task Updating_sets_status_notes_and_the_updated_timestamp()
+    public async Task Searching_filters_by_project_type()
+    {
+        await _service.SubmitAsync(ValidRequest(), "203.0.113.7", null);
+
+        var matching = await _service.SearchAsync(
+            null, "kitchen-remodeling", null, null, null, EstimateRequestSort.NewestFirst, 1, 20);
+        var other = await _service.SearchAsync(
+            null, "roofing", null, null, null, EstimateRequestSort.NewestFirst, 1, 20);
+
+        Assert.Single(matching.Items);
+        Assert.Empty(other.Items);
+    }
+
+    [Fact]
+    public async Task Project_type_facets_come_only_from_real_leads()
+    {
+        var facets = await _service.GetProjectTypeFacetsAsync();
+        Assert.Empty(facets);
+
+        await _service.SubmitAsync(ValidRequest(), "203.0.113.7", null);
+
+        facets = await _service.GetProjectTypeFacetsAsync();
+        Assert.Equal(new[] { "flooring", "kitchen-remodeling" }, facets);
+    }
+
+    [Fact]
+    public async Task Changing_status_records_who_did_it_and_when()
     {
         await _service.SubmitAsync(ValidRequest(), "203.0.113.7", null);
         var saved = await _fixture.Db.EstimateRequests.SingleAsync();
 
-        var updated = await _service.UpdateAsync(
-            saved.Id,
-            new UpdateEstimateRequestDto
-            {
-                Status = EstimateRequestStatus.Contacted,
-                InternalNotes = "Called and left a message.",
-            },
-            CancellationToken.None);
+        var result = await _service.ChangeStatusAsync(
+            saved.Id, EstimateRequestStatus.Contacted, null, Actor);
 
-        Assert.NotNull(updated);
-        Assert.Equal(EstimateRequestStatus.Contacted, updated.Status);
-        Assert.Equal("Called and left a message.", updated.InternalNotes);
-        Assert.NotNull(updated.UpdatedAtUtc);
+        Assert.True(result.Ok);
+        Assert.Equal(EstimateRequestStatus.Contacted, result.Value!.Request.Status);
+
+        var entry = Assert.Single(result.Value.History);
+        Assert.Equal(EstimateRequestStatus.New, entry.PreviousStatus);
+        Assert.Equal(EstimateRequestStatus.Contacted, entry.NewStatus);
+        Assert.Equal("Sam Kellum", entry.ChangedByDisplayName);
     }
 
     [Fact]
-    public async Task Updating_an_unknown_id_returns_null_rather_than_throwing()
+    public async Task Reselecting_the_same_status_writes_no_history()
     {
-        var updated = await _service.UpdateAsync(
-            9999,
-            new UpdateEstimateRequestDto { Status = EstimateRequestStatus.Lost },
-            CancellationToken.None);
+        await _service.SubmitAsync(ValidRequest(), "203.0.113.7", null);
+        var saved = await _fixture.Db.EstimateRequests.SingleAsync();
 
-        Assert.Null(updated);
+        var result = await _service.ChangeStatusAsync(
+            saved.Id, EstimateRequestStatus.New, null, Actor);
+
+        Assert.True(result.Ok);
+        // A no-op must not manufacture an audit entry that never happened.
+        Assert.Empty(result.Value!.History);
+        Assert.Empty(await _fixture.Db.EstimateRequestStatusHistory.ToListAsync());
     }
+
+    [Fact]
+    public async Task Changing_the_status_of_an_unknown_id_reports_not_found()
+    {
+        var result = await _service.ChangeStatusAsync(
+            9999, EstimateRequestStatus.Lost, null, Actor);
+
+        Assert.False(result.Ok);
+        Assert.Equal(WriteFailure.NotFound, result.Failure);
+    }
+
+    [Fact]
+    public async Task A_malformed_concurrency_token_is_a_conflict_not_a_crash()
+    {
+        await _service.SubmitAsync(ValidRequest(), "203.0.113.7", null);
+        var saved = await _fixture.Db.EstimateRequests.SingleAsync();
+
+        var result = await _service.ChangeStatusAsync(
+            saved.Id, EstimateRequestStatus.Contacted, "not-base64!!", Actor);
+
+        Assert.False(result.Ok);
+        Assert.Equal(WriteFailure.Conflict, result.Failure);
+    }
+
+    [Fact]
+    public async Task Notes_are_stored_against_the_request_with_their_author()
+    {
+        await _service.SubmitAsync(ValidRequest(), "203.0.113.7", null);
+        var saved = await _fixture.Db.EstimateRequests.SingleAsync();
+
+        var added = await _service.AddNoteAsync(saved.Id, "  Called and left a message.  ", Actor);
+
+        Assert.True(added.Ok);
+        Assert.Equal("Called and left a message.", added.Value!.Note);
+        Assert.Equal("Sam Kellum", added.Value.CreatedByDisplayName);
+
+        var detail = await _service.GetDetailAsync(saved.Id);
+        Assert.Single(detail!.Notes);
+    }
+
+    [Fact]
+    public async Task A_note_cannot_be_deleted_through_a_different_request()
+    {
+        await _service.SubmitAsync(ValidRequest(), "203.0.113.1", null);
+        await _service.SubmitAsync(ValidRequest(), "203.0.113.2", null);
+
+        var requests = await _fixture.Db.EstimateRequests.OrderBy(r => r.Id).ToListAsync();
+        var note = await _service.AddNoteAsync(requests[0].Id, "Private note.", Actor);
+
+        // Same note id, wrong parent: this is the IDOR the scoping prevents.
+        var wrongParent = await _service.DeleteNoteAsync(requests[1].Id, note.Value!.Id);
+
+        Assert.False(wrongParent.Ok);
+        Assert.Equal(WriteFailure.NotFound, wrongParent.Failure);
+        Assert.Single(await _fixture.Db.EstimateRequestNotes.ToListAsync());
+
+        var rightParent = await _service.DeleteNoteAsync(requests[0].Id, note.Value.Id);
+        Assert.True(rightParent.Ok);
+        Assert.Empty(await _fixture.Db.EstimateRequestNotes.ToListAsync());
+    }
+
+    private Task<PagedResultDto<AdminEstimateRequestDto>> Search(string term) =>
+        _service.SearchAsync(null, null, null, null, term, EstimateRequestSort.NewestFirst, 1, 20);
 
     /* ----------------------------------------------------- dto validation */
 
