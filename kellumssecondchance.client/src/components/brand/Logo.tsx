@@ -33,7 +33,7 @@ import { useSiteContent } from '@/lib/siteContentContext';
  */
 
 /** Intrinsic pixel dimensions of the supplied files — never guess these. */
-const LOCKUP = { src: '/brand/kellums-logo-lockup.png', width: 733, height: 594 } as const;
+const LOCKUP = { src: '/brand/logo-black.png', width: 733, height: 594 } as const;
 const MARK = { src: '/brand/kellums-mark.png', width: 434, height: 364 } as const;
 
 /** Describes the artwork itself, for anyone who cannot see it. */
