@@ -12,7 +12,7 @@ interface BeforeAfterSliderProps {
   /** Starting divider position, 0–100. */
   initial?: number;
   className?: string;
-  ratio?: 'landscape' | 'wide' | 'portrait' | 'square';
+  ratio?: 'landscape' | 'classic' | 'wide' | 'portrait' | 'square';
   sizes?: string;
   priority?: boolean;
   beforeLabel?: string;

@@ -180,6 +180,20 @@ public class RenovationProjectImage
     public DateTime? CreatedAtUtc { get; set; }
 }
 
+/// <summary>A standalone photograph controlled by the Gallery CMS.</summary>
+public class GalleryImage : ContentEntity
+{
+    public required string ImagePath { get; set; }
+    public required string OriginalFileName { get; set; }
+    public required string AltText { get; set; }
+    public string? Caption { get; set; }
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public string? StorageKey { get; set; }
+    public long? FileSizeBytes { get; set; }
+    public string? ContentType { get; set; }
+}
+
 /// <summary>Join table: which services were performed on a project.</summary>
 public class ProjectService
 {

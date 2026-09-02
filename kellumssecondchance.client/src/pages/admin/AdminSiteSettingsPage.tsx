@@ -43,6 +43,7 @@ interface Draft {
   foundedYear: string;
   siteUrl: string;
   ogImagePath: string;
+  googleReviewUrl: string;
   socialLinks: readonly SocialLink[];
   officeHours: readonly OfficeHours[];
 }
@@ -65,6 +66,7 @@ const EMPTY: Draft = {
   foundedYear: '',
   siteUrl: '',
   ogImagePath: '',
+  googleReviewUrl: '',
   socialLinks: [],
   officeHours: [],
 };
@@ -88,6 +90,7 @@ function toDraft(settings: AdminSiteSettings): Draft {
     foundedYear: settings.foundedYear === null ? '' : String(settings.foundedYear),
     siteUrl: settings.siteUrl ?? '',
     ogImagePath: settings.ogImagePath ?? '',
+    googleReviewUrl: settings.googleReviewUrl ?? '',
     socialLinks: settings.socialLinks,
     officeHours: settings.officeHours,
   };
@@ -162,6 +165,7 @@ export default function AdminSiteSettingsPage() {
       foundedYear: draft.foundedYear.trim() ? Number(draft.foundedYear) : null,
       siteUrl: orNull(draft.siteUrl),
       ogImagePath: orNull(draft.ogImagePath),
+      googleReviewUrl: orNull(draft.googleReviewUrl),
       socialLinks: draft.socialLinks.filter((link) => link.label.trim() && link.href.trim()),
       officeHours: draft.officeHours.filter((entry) => entry.label.trim() && entry.hours.trim()),
     };
@@ -244,6 +248,7 @@ export default function AdminSiteSettingsPage() {
             foundedYear: 'Year the business started',
             siteUrl: 'Website address',
             ogImagePath: 'Sharing image',
+            googleReviewUrl: 'Google review address',
             socialLinks: 'Social profiles',
             officeHours: 'Trading hours',
           }}
@@ -555,6 +560,17 @@ export default function AdminSiteSettingsPage() {
               error={errors.fields.ogImagePath}
               hint="Path to a 1200×630 PNG or JPG, e.g. /brand/social-card.png. Not an SVG — Facebook and iMessage will not render one."
               onChange={(event) => set('ogImagePath', event.target.value)}
+            />
+
+            <TextInput
+              label="Google review address"
+              name="googleReviewUrl"
+              type="url"
+              maxLength={500}
+              value={draft.googleReviewUrl}
+              error={errors.fields.googleReviewUrl}
+              hint="Optional. Paste the business's verified HTTPS Google review link; leave blank to show no Google CTA."
+              onChange={(event) => set('googleReviewUrl', event.target.value)}
             />
 
             {!draft.ogImagePath ? (

@@ -14,41 +14,36 @@ import { useAsync } from '@/lib/hooks/useAsync';
 import { getServiceAreas } from '@/lib/api/endpoints';
 import { useSiteContent } from '@/lib/siteContentContext';
 import { business } from '@/content/business';
-import { editorialMedia } from '@/content/media';
-import type { ServiceArea } from '@/lib/api/types';
 
 const CRUMBS = [
   { name: 'Home', path: '/' },
   { name: 'Service Area', path: '/service-area' },
 ];
 
+const CINCINNATI_MAP_URL =
+  'https://www.google.com/maps?q=Cincinnati%2C%20OH&z=12&output=embed';
 
-const KIND_LABEL: Record<ServiceArea['kind'], string> = {
-  City: 'City',
-  County: 'County',
-  PostalCode: 'ZIP code',
-  Region: 'Region',
-};
 
 export default function ServiceAreaPage() {
   const loader = useCallback((signal: AbortSignal) => getServiceAreas(signal), []);
   const areas = useAsync(loader);
   const { content, site } = useSiteContent();
-  const structuredData = useMemo(
-    () => graph(organizationSchema(site), breadcrumbSchema(site, CRUMBS)),
-    [site],
-  );
-
-  const list = areas.data ?? [];
+  const list = useMemo(() => areas.data ?? [], [areas.data]);
   const primary = list.filter((a) => a.isPrimary);
   const extended = list.filter((a) => !a.isPrimary);
+  const primaryCity = primary.find((area) => area.kind === 'City');
+  const counties = primary.filter((area) => area.kind === 'County');
+  const structuredData = useMemo(
+    () => graph(organizationSchema(site, list), breadcrumbSchema(site, CRUMBS)),
+    [site, list],
+  );
   const hasSample = list.some((a) => a.isSampleContent);
 
   return (
     <>
       <Seo
         title="Service Area"
-        description="Where Kellum’s Second Chance Renovations works. Not sure if you are in our area? Ask — we will tell you straight."
+        description="Kellum’s serves Cincinnati and approved nearby communities across Hamilton, Butler, Clermont and Warren counties in Ohio."
         path="/service-area"
         structuredData={structuredData}
       />
@@ -58,7 +53,18 @@ export default function ServiceAreaPage() {
         title="Close enough to show up when we say we will."
         lead={content.serviceAreaSummary ?? business.serviceAreaSummary}
         crumbs={CRUMBS}
-        image={editorialMedia.serviceArea}
+        panelContent={
+          <div className={styles.mapFrame}>
+            <iframe
+              className={styles.map}
+              src={CINCINNATI_MAP_URL}
+              title="Google Map showing Cincinnati, Ohio service area"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
+          </div>
+        }
         layout="panel"
       />
 
@@ -92,46 +98,52 @@ export default function ServiceAreaPage() {
           ) : (
             <div className={styles.layout}>
               <div className={styles.lists}>
-                {primary.length > 0 ? (
+                {primaryCity || counties.length > 0 ? (
                   <div className={styles.group}>
                     <h3 className={styles.groupTitle}>Core service area</h3>
                     <ul className={styles.areaList}>
-                      {primary.map((area) => (
-                        <li className={styles.area} key={area.id}>
+                      {primaryCity ? (
+                        <li className={styles.area} key={primaryCity.id}>
                           <span className={styles.areaHead}>
                             <MapPin size={16} strokeWidth={1.8} aria-hidden="true" />
-                            <span className={styles.areaName}>{area.name}</span>
-                            <Badge tone="outline">{KIND_LABEL[area.kind]}</Badge>
+                            <span className={styles.areaName}>{primaryCity.name}</span>
+                            <Badge tone="outline">City</Badge>
                           </span>
-                          {area.stateOrRegion ? (
-                            <span className={styles.areaRegion}>{area.stateOrRegion}</span>
-                          ) : null}
-                          {area.postalCodes.length > 0 ? (
-                            <span className={styles.postalCodes}>
-                              {area.postalCodes.join(' · ')}
-                            </span>
-                          ) : null}
-                          {area.note ? <span className={styles.areaNote}>{area.note}</span> : null}
+                          <span className={styles.areaNote}>
+                            {primaryCity.note ?? 'Our primary service area is Cincinnati, Ohio.'}
+                          </span>
                         </li>
-                      ))}
+                      ) : null}
+                      {counties.length > 0 ? (
+                        <li className={styles.area}>
+                          <span className={styles.areaHead}>
+                            <MapPin size={16} strokeWidth={1.8} aria-hidden="true" />
+                            <span className={styles.areaName}>Surrounding counties</span>
+                            <Badge tone="outline">Counties</Badge>
+                          </span>
+                          <span className={styles.areaNames}>{counties.map((area) => area.name).join(' · ')}</span>
+                          <span className={styles.areaNote}>
+                            Serving homeowners across Hamilton, Butler, Clermont and Warren counties.
+                          </span>
+                        </li>
+                      ) : null}
                     </ul>
                   </div>
                 ) : null}
 
                 {extended.length > 0 ? (
                   <div className={styles.group}>
-                    <h3 className={styles.groupTitle}>We also travel to</h3>
+                    <h3 className={styles.groupTitle}>Nearby communities</h3>
                     <ul className={styles.areaList}>
-                      {extended.map((area) => (
-                        <li className={styles.area} key={area.id}>
+                      <li className={styles.area}>
                           <span className={styles.areaHead}>
                             <MapPin size={16} strokeWidth={1.8} aria-hidden="true" />
-                            <span className={styles.areaName}>{area.name}</span>
-                            <Badge tone="neutral">{KIND_LABEL[area.kind]}</Badge>
+                            <span className={styles.areaName}>Neighboring communities</span>
+                            <Badge tone="neutral">Communities</Badge>
                           </span>
-                          {area.note ? <span className={styles.areaNote}>{area.note}</span> : null}
+                          <span className={styles.areaNames}>{extended.map((area) => area.name).join(' · ')}</span>
+                          <span className={styles.areaNote}>Nearby communities we commonly serve around Cincinnati.</span>
                         </li>
-                      ))}
                     </ul>
                   </div>
                 ) : null}
@@ -141,8 +153,8 @@ export default function ServiceAreaPage() {
                 <div className={styles.panel} data-theme="dark">
                   <h3 className={styles.panelTitle}>Not on the list?</h3>
                   <p className={styles.panelBody}>
-                    Ask anyway. Travel time matters more than a boundary on a map, and for the right
-                    project we go further. The worst answer you will get is an honest no.
+                    Send us your location and project details. We will confirm whether your address
+                    is within the area we can serve.
                   </p>
                   <Button as="link" to="/request-estimate" fullWidth iconRight={<ArrowUpRight size={17} />}>
                     Send us your ZIP code
@@ -166,7 +178,7 @@ export default function ServiceAreaPage() {
       <CtaSection
         eyebrow="Let's find out"
         title="Tell us where you are."
-        body="Send us your ZIP code with your project and we will confirm straight away whether we can get to you."
+        body="Send us your ZIP code with your project and we will confirm whether your address is in our service area."
       />
     </>
   );

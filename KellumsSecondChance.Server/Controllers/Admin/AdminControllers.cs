@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 
 namespace KellumsSecondChance.Server.Controllers.Admin;
 
@@ -142,7 +143,7 @@ public class AdminAuthController(
 [Route("api/admin/estimate-requests")]
 public class AdminEstimateRequestsController(
     IEstimateRequestAdminService estimates,
-    UserManager<ApplicationUser> users) : AdminWriteController
+    UserManager<ApplicationUser> users, KellumsDbContext db, IEstimateRequestNotifier notifier) : AdminWriteController
 {
     [HttpGet]
     [ProducesResponseType<PagedResultDto<AdminEstimateRequestDto>>(StatusCodes.Status200OK)]
@@ -233,4 +234,70 @@ public class AdminEstimateRequestsController(
         var user = await users.GetUserAsync(User);
         return new AdminActor(user?.Id, user?.DisplayName ?? user?.Email);
     }
+
+    [HttpPost("{id:int}/notification/retry")]
+    [ValidateAntiforgeryHeader]
+    public async Task<IActionResult> RetryNotification(int id, CancellationToken ct)
+    {
+        var item=await db.EstimateRequests.SingleOrDefaultAsync(x=>x.Id==id,ct); if(item is null)return NotFound();
+        await notifier.NotifyNewRequestAsync(item,null,ct); return Ok(new { item.NotificationDeliveredAtUtc,item.NotificationFailedAtUtc,item.NotificationFailureCategory,item.NotificationAttemptCount });
+    }
+}
+
+/// <summary>Private, lightweight triage for preliminary work-interest enquiries.</summary>
+[Route("api/admin/employment-interests")]
+public class AdminEmploymentInterestsController(KellumsDbContext db, IEmploymentInterestNotifier notifier) : AdminWriteController
+{
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<AdminEmploymentInterestDto>>> List(CancellationToken ct)
+    {
+        NoStore();
+        var entities = await db.EmploymentInterests.AsNoTracking()
+            .OrderBy(x => x.Status == Domain.Enums.EmploymentInterestStatus.Archived)
+            .ThenByDescending(x => x.CreatedAtUtc)
+            .ToListAsync(ct);
+        return Ok(entities.Select(ToDto).ToList());
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<AdminEmploymentInterestDto>> Detail(int id, CancellationToken ct)
+    {
+        NoStore();
+        var item = await db.EmploymentInterests.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct);
+        return item is null ? NotFound() : Ok(ToDto(item));
+    }
+
+    [HttpPut("{id:int}")]
+    [ValidateAntiforgeryHeader]
+    public async Task<ActionResult<AdminEmploymentInterestDto>> Update(
+        int id, UpdateEmploymentInterestDto dto, CancellationToken ct)
+    {
+        var item = await db.EmploymentInterests.SingleOrDefaultAsync(x => x.Id == id, ct);
+        if (item is null) return NotFound();
+        byte[] expected;
+        try { expected = Convert.FromBase64String(dto.RowVersion); }
+        catch (FormatException) { return ValidationProblem(title: "That version token is not valid."); }
+
+        db.Entry(item).Property(x => x.RowVersion).OriginalValue = expected;
+        item.Status = dto.Status;
+        item.InternalNotes = string.IsNullOrWhiteSpace(dto.InternalNotes) ? null : dto.InternalNotes.Trim();
+        try { await db.SaveChangesAsync(ct); }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Problem(title: "This enquiry changed while you were editing it.", statusCode: StatusCodes.Status409Conflict);
+        }
+        return Ok(ToDto(item));
+    }
+
+    private static AdminEmploymentInterestDto ToDto(Domain.Entities.EmploymentInterest x) => new(
+        x.Id, x.FirstName, x.LastName, x.Email, x.Phone, x.PreferredContactMethod,
+        x.GeneralWorkExperience, x.AreasOfExperience, x.WorkInterest, x.Availability,
+        x.Message, x.Status, x.InternalNotes, x.CreatedAtUtc, x.UpdatedAtUtc,
+        Convert.ToBase64String(x.RowVersion ?? []), x.NotificationAttemptCount,
+        x.NotificationAttemptedAtUtc, x.NotificationDeliveredAtUtc, x.NotificationFailedAtUtc,
+        x.NotificationFailureCategory);
+
+    [HttpPost("{id:int}/notification/retry")]
+    [ValidateAntiforgeryHeader]
+    public async Task<IActionResult> RetryNotification(int id,CancellationToken ct){var item=await db.EmploymentInterests.SingleOrDefaultAsync(x=>x.Id==id,ct);if(item is null)return NotFound();await notifier.NotifyAsync(item,null,ct);return Ok(new{item.NotificationDeliveredAtUtc,item.NotificationFailedAtUtc,item.NotificationFailureCategory,item.NotificationAttemptCount});}
 }

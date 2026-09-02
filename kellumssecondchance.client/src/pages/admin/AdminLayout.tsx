@@ -5,6 +5,7 @@ import {
   FileQuestion,
   Hammer,
   Inbox,
+  Users,
   LayoutDashboard,
   LogOut,
   MapPin,
@@ -13,6 +14,8 @@ import {
   Settings,
   Sparkles,
   X,
+  CalendarClock,
+  Images,
 } from 'lucide-react';
 import styles from './AdminLayout.module.css';
 import { AdminFeedbackProvider } from './components/AdminFeedbackProvider';
@@ -30,7 +33,10 @@ import type { AdminUser } from '@/lib/api/types';
 const NAV = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/estimate-requests', label: 'Estimate requests', icon: Inbox, end: false },
+  { to: '/admin/employment-interests', label: 'Work enquiries', icon: Users, end: false },
+  { to: '/admin/bookings', label: 'Bookings', icon: CalendarClock, end: false },
   { to: '/admin/projects', label: 'Projects', icon: Hammer, end: false },
+  { to: '/admin/gallery', label: 'Gallery', icon: Images, end: false },
   { to: '/admin/services', label: 'Services', icon: Sparkles, end: false },
   { to: '/admin/testimonials', label: 'Reviews', icon: MessageSquareQuote, end: false },
   { to: '/admin/faqs', label: 'Questions', icon: FileQuestion, end: false },

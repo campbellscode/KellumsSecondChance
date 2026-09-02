@@ -17,26 +17,29 @@ export function StorySection() {
       <Container width="wide">
         <div className={styles.layout}>
           <div className={styles.media}>
-            <div className={styles.mediaPrimary} data-photo-zoom data-reveal>
-              <Photo
-                image={editorialMedia.storyPortrait}
-                ratio="portrait"
-                zoomOnHover
-                sizes="(min-width: 68rem) 34vw, 92vw"
-              />
-              <span className={styles.mediaTickTl} aria-hidden="true" />
-            </div>
-            <div className={styles.mediaSecondary} data-photo-zoom data-reveal style={{ ['--reveal-delay' as string]: '140ms' }}>
-              <Photo
-                image={editorialMedia.story}
-                ratio="landscape"
-                zoomOnHover
-                sizes="(min-width: 68rem) 22vw, 60vw"
-              />
+            <div className={styles.mediaStack}>
+              <div className={styles.mediaPrimary} data-reveal>
+                <Photo
+                  image={editorialMedia.storyPortrait}
+                  ratio="square"
+                  objectPosition="center"
+                  sizes="(min-width: 18rem) 18rem, 100vw"
+                />
+                <span className={styles.mediaTickTl} aria-hidden="true" />
+              </div>
+              <div className={styles.mediaSecondary} data-photo-zoom data-reveal style={{ ['--reveal-delay' as string]: '140ms' }}>
+                <Photo
+                  image={editorialMedia.story}
+                  ratio="square"
+                  zoomOnHover
+                  objectPosition="center"
+                  sizes="(min-width: 68rem) 15vw, 44vw"
+                />
+              </div>
             </div>
             <p className={styles.mediaCaption}>
               <span className={styles.mediaCaptionIndex}>Fig. 01</span>
-              Finish carpentry and trim detail
+              Exterior restoration in progress
             </p>
           </div>
 
@@ -58,7 +61,7 @@ export function StorySection() {
             </blockquote>
 
             <Button as="link" to="/about" variant="secondary" iconRight={<ArrowUpRight size={17} />}>
-              More about how we work
+              Why the name matters
             </Button>
           </div>
         </div>

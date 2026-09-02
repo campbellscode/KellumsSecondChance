@@ -1,5 +1,5 @@
 import type { SiteProfile } from '@/lib/siteContentContext';
-import type { FaqItem, ProjectDetail, ServiceDetail, ServiceSummary, Testimonial } from '@/lib/api/types';
+import type { FaqItem, ProjectDetail, ServiceArea, ServiceDetail, ServiceSummary, Testimonial } from '@/lib/api/types';
 
 /**
  * Schema.org builders.
@@ -21,7 +21,7 @@ function orgId(site: SiteProfile): string {
   return `${site.siteUrl}/#organization`;
 }
 
-export function organizationSchema(site: SiteProfile): object {
+export function organizationSchema(site: SiteProfile, serviceAreas: readonly ServiceArea[] = []): object {
   const node: Record<string, unknown> = {
     '@type': 'HomeAndConstructionBusiness',
     '@id': orgId(site),
@@ -31,12 +31,12 @@ export function organizationSchema(site: SiteProfile): object {
     description: site.elevatorPitch,
     slogan: site.tagline,
     knowsAbout: [
-      'Kitchen remodeling',
-      'Bathroom renovation',
-      'Basement finishing',
-      'Interior renovation',
-      'Carpentry and trim',
-      'Home repair and restoration',
+      'Roofing',
+      'Siding',
+      'Gutters and downspouts',
+      'Decks and porches',
+      'Exterior carpentry',
+      'Exterior repair and restoration',
     ],
   };
 
@@ -65,6 +65,14 @@ export function organizationSchema(site: SiteProfile): object {
 
   if (site.foundedYear !== null) node.foundingDate = String(site.foundedYear);
   if (site.socialHrefs.length > 0) node.sameAs = [...site.socialHrefs];
+  if (serviceAreas.length > 0) {
+    node.areaServed = serviceAreas.map((area) => ({
+      '@type': area.kind === 'County' ? 'AdministrativeArea' : 'City',
+      name: area.stateOrRegion && !area.name.includes(area.stateOrRegion)
+        ? `${area.name}, ${area.stateOrRegion}`
+        : area.name,
+    }));
+  }
 
   return node;
 }

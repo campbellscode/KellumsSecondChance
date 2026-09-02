@@ -160,6 +160,7 @@ public record SiteContentDto(
     string? SiteUrl,
     /// <summary>Root-relative raster social card. Null omits og:image entirely.</summary>
     string? OgImagePath,
+    string? GoogleReviewUrl,
     IReadOnlyList<SocialLinkDto> SocialLinks,
     /// <summary>
     /// Trading hours. EMPTY until the business supplies them — the site shows
@@ -203,4 +204,16 @@ public record AdminEstimateRequestDto(
     EstimateRequestStatus Status,
     string? InternalNotes,
     DateTime CreatedAtUtc,
-    DateTime? UpdatedAtUtc);
+    DateTime? UpdatedAtUtc,
+    string? LandingPage,
+    string? ReferrerUrl,
+    string? UtmSource,
+    string? UtmMedium,
+    string? UtmCampaign,
+    string? UtmTerm,
+    string? UtmContent,
+    int NotificationAttemptCount,
+    DateTime? NotificationAttemptedAtUtc,
+    DateTime? NotificationDeliveredAtUtc,
+    DateTime? NotificationFailedAtUtc,
+    string? NotificationFailureCategory);

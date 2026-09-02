@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using KellumsSecondChance.Server.Domain.Enums;
 
 namespace KellumsSecondChance.Server.Tests;
 
@@ -19,10 +21,31 @@ namespace KellumsSecondChance.Server.Tests;
 public class KellumsApiFactory : WebApplicationFactory<Program>
 {
     private SqliteConnection? _connection;
+    protected virtual string AppEnvironment => Environments.Development;
+    protected virtual string? ProductionSiteUrl => "https://kellumssecondchance.com";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment(Environments.Development);
+        builder.UseEnvironment(AppEnvironment);
+
+        if (AppEnvironment == Environments.Production)
+        {
+            builder.UseSetting("ConnectionStrings:KellumsDatabase", "Server=(local);Database=unused;Trusted_Connection=True;TrustServerCertificate=True");
+            if (ProductionSiteUrl is not null)
+                builder.UseSetting("Production:SiteUrl", ProductionSiteUrl);
+            builder.UseSetting("Production:DataProtectionKeyPath", Path.Combine(Path.GetTempPath(), "kellums-test-keys"));
+            builder.ConfigureAppConfiguration((_, configuration) =>
+            {
+                var settings = new Dictionary<string, string?>
+                {
+                    ["Production:DataProtectionKeyPath"] = Path.Combine(Path.GetTempPath(), "kellums-test-keys"),
+                    ["ConnectionStrings:KellumsDatabase"] = "Server=(local);Database=unused;Trusted_Connection=True;TrustServerCertificate=True",
+                };
+                if (ProductionSiteUrl is not null)
+                    settings["Production:SiteUrl"] = ProductionSiteUrl;
+                configuration.AddInMemoryCollection(settings);
+            });
+        }
 
         builder.ConfigureServices(services =>
         {
@@ -72,6 +95,136 @@ public class ApiIntegrationTests(KellumsApiFactory factory) : IClassFixture<Kell
     /* ---------------------------------------------------- public routes */
 
     [Theory]
+    [InlineData("/", "Kellum&#39;s Second Chance Renovations")]
+    [InlineData("/about", "About | Kellum&#39;s Second Chance Renovations")]
+    [InlineData("/work-with-us", "Work With Us | Kellum&#39;s Second Chance Renovations")]
+    [InlineData("/gallery", "Gallery | Kellum&#39;s Second Chance Renovations")]
+    [InlineData("/bookings", "Bookings | Kellum&#39;s Second Chance Renovations")]
+    public async Task Spa_shell_returns_route_specific_non_javascript_metadata(string path, string encodedTitle)
+    {
+        var response = await Client().GetAsync(path + "?utm_source=test");
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("noindex", response.Headers.GetValues("X-Robots-Tag").Single());
+        Assert.Contains("name=\"robots\" content=\"noindex, nofollow\" data-runtime-indexing=\"disabled\"", html);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(html, "name=\\\"robots\\\"").Cast<System.Text.RegularExpressions.Match>());
+        Assert.Contains($"<title>{encodedTitle}</title>", html);
+        Assert.Contains("rel=\"canonical\"", html);
+        Assert.DoesNotContain("utm_source", html);
+        Assert.Contains("property=\"og:title\"", html);
+        Assert.Contains("property=\"og:image\"", html);
+        Assert.Contains("name=\"twitter:image\"", html);
+        Assert.Contains("name=\"twitter:card\" content=\"summary_large_image\"", html);
+        Assert.Contains("/media/social/social-thumbnail-1.png", html);
+        Assert.Contains("property=\"og:image:width\" content=\"1731\"", html);
+        Assert.Contains("property=\"og:image:height\" content=\"909\"", html);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(html, "property=\\\"og:image\\\"").Cast<System.Text.RegularExpressions.Match>());
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(html, "name=\\\"twitter:image\\\"").Cast<System.Text.RegularExpressions.Match>());
+    }
+
+    [Fact]
+    public async Task Development_metadata_uses_the_public_request_origin_when_no_site_url_is_configured()
+    {
+        var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("https://dev.kellumssecondchance.com"),
+            AllowAutoRedirect = false,
+        });
+
+        var html = await client.GetStringAsync("/");
+
+        Assert.Contains("rel=\"canonical\" href=\"https://dev.kellumssecondchance.com/\"", html);
+        Assert.Contains("property=\"og:url\" content=\"https://dev.kellumssecondchance.com/\"", html);
+        Assert.Contains("property=\"og:image\" content=\"https://dev.kellumssecondchance.com/media/social/social-thumbnail-1.png\"", html);
+        Assert.DoesNotContain("http://localhost", html, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("facebookexternalhit/1.1")]
+    [InlineData("Facebot")]
+    [InlineData("Meta-ExternalAgent/1.1")]
+    [InlineData("Meta-ExternalFetcher/1.1")]
+    public async Task Public_metadata_does_not_block_social_preview_user_agents(string userAgent)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "/");
+        request.Headers.UserAgent.ParseAdd(userAgent);
+
+        var response = await Client().SendAsync(request);
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("noindex", response.Headers.GetValues("X-Robots-Tag").Single());
+        Assert.Contains("property=\"og:title\"", html);
+        Assert.Contains("name=\"twitter:card\"", html);
+    }
+
+    [Fact]
+    public async Task Booking_request_is_saved_as_pending_and_admin_route_is_authorized()
+    {
+        var preferred = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(3));
+        var response = await Client().PostAsJsonAsync("/api/booking-requests", new
+        {
+            firstName = "Avery", lastName = "Homeowner", email = "avery@example.com", phone = "513-555-0101",
+            preferredDate = preferred, preferredTime = new TimeOnly(10, 30),
+            address = "1 Main St", city = "Cincinnati", state = "OH", postalCode = "45236",
+            projectDescription = "Please inspect the exterior siding and trim.", elapsedMs = 5000,
+        });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<KellumsDbContext>();
+        var saved = await db.BookingRequests.AsNoTracking().SingleAsync(x => x.Email == "avery@example.com");
+        Assert.Equal(BookingRequestStatus.Pending, saved.Status);
+        Assert.Equal(preferred, saved.PreferredDate);
+        var unauthorized = await Client().GetAsync("/api/admin/bookings");
+        Assert.Equal(HttpStatusCode.Unauthorized, unauthorized.StatusCode);
+    }
+
+    [Fact]
+    public async Task Booking_request_rejects_a_past_date()
+    {
+        var response = await Client().PostAsJsonAsync("/api/booking-requests", new
+        {
+            firstName = "Avery", lastName = "Homeowner", email = "past@example.com", phone = "513-555-0101",
+            preferredDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)), preferredTime = new TimeOnly(10, 30),
+            address = "1 Main St", city = "Cincinnati", state = "OH", postalCode = "45236",
+            projectDescription = "Please inspect the exterior siding and trim.", elapsedMs = 5000,
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("/not-a-real-route")]
+    [InlineData("/services/not-a-real-service")]
+    [InlineData("/projects/not-a-real-project")]
+    public async Task Unknown_and_nonpublic_spa_routes_are_real_404s(string path)
+    {
+        Assert.Equal(HttpStatusCode.NotFound, (await Client().GetAsync(path)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Liveness_is_sanitized_and_readiness_has_only_status()
+    {
+        var live = await Client().GetAsync("/health/live");
+        var ready = await Client().GetAsync("/health/ready");
+        Assert.Equal(HttpStatusCode.OK, live.StatusCode);
+        var text = await ready.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("ConnectionStrings", text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("wwwroot", text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("stack", text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Sitemap_and_robots_use_public_routes_without_private_content()
+    {
+        var sitemap = await Client().GetStringAsync("/sitemap.xml");
+        var robots = await Client().GetStringAsync("/robots.txt");
+        Assert.Contains("/work-with-us", sitemap);
+        Assert.DoesNotContain("/admin", sitemap);
+        Assert.DoesNotContain("estimate-requests", sitemap);
+        Assert.Contains("Sitemap:", robots);
+    }
+
+    [Theory]
     [InlineData("/api/services")]
     [InlineData("/api/projects")]
     [InlineData("/api/projects/categories")]
@@ -80,6 +233,7 @@ public class ApiIntegrationTests(KellumsApiFactory factory) : IClassFixture<Kell
     [InlineData("/api/faqs")]
     [InlineData("/api/service-areas")]
     [InlineData("/api/site-content")]
+    [InlineData("/api/gallery")]
     public async Task Public_read_endpoints_are_anonymous_and_return_json(string path)
     {
         var response = await Client().GetAsync(path);
@@ -106,17 +260,21 @@ public class ApiIntegrationTests(KellumsApiFactory factory) : IClassFixture<Kell
     }
 
     [Fact]
-    public async Task Site_content_never_invents_contact_details()
+    public async Task Site_content_publishes_only_the_confirmed_contact_defaults()
     {
         var content = await Client().GetFromJsonAsync<SiteContentDto>(
             "/api/site-content");
 
         Assert.NotNull(content);
         Assert.False(string.IsNullOrWhiteSpace(content.BusinessName));
-        // Nothing was configured, so nothing may be published.
-        Assert.Null(content.PhoneDisplay);
-        Assert.Null(content.PhoneE164);
-        Assert.Null(content.Email);
+        Assert.Equal("513-620-0130", content.PhoneDisplay);
+        Assert.Equal("+15136200130", content.PhoneE164);
+        Assert.Equal("secondchancerenov@gmail.com", content.Email);
+        Assert.Equal("Cincinnati", content.AddressLocality);
+        Assert.Equal("OH", content.AddressRegion);
+        Assert.Equal("45236", content.AddressPostalCode);
+        Assert.Null(content.AddressLine1);
+        Assert.Empty(content.OfficeHours);
     }
 
     /* -------------------------------------------------- security headers */
@@ -139,6 +297,7 @@ public class ApiIntegrationTests(KellumsApiFactory factory) : IClassFixture<Kell
         var csp = response.Headers.GetValues("Content-Security-Policy").Single();
 
         Assert.Contains("frame-ancestors 'none'", csp);
+        Assert.Contains("frame-src https://www.google.com", csp);
         Assert.Contains("object-src 'none'", csp);
         Assert.Contains("base-uri 'self'", csp);
     }
@@ -188,6 +347,56 @@ public class ApiIntegrationTests(KellumsApiFactory factory) : IClassFixture<Kell
             CancellationToken.None);
         Assert.NotNull(result);
         Assert.StartsWith("KSC-", result.Reference);
+    }
+
+    [Fact]
+    public async Task A_valid_employment_interest_is_saved_with_server_controlled_private_fields()
+    {
+        using var isolated = new KellumsApiFactory();
+        var response = await isolated.CreateClient().PostAsJsonAsync("/api/employment-interests", new
+        {
+            firstName = "Jordan", lastName = "Lee", email = "jordan@example.com",
+            phone = "513-555-0100", preferredContactMethod = "Email",
+            generalWorkExperience = "Residential maintenance", areasOfExperience = "Painting and trim",
+            workInterest = "Renovation crew", availability = "Weekdays", message = "Ready to learn.",
+            status = "Archived", internalNotes = "must not bind", elapsedMs = 30000,
+        });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("internalNotes", body, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("rowVersion", body, StringComparison.OrdinalIgnoreCase);
+
+        using var scope = isolated.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<KellumsDbContext>();
+        var saved = await db.EmploymentInterests.AsNoTracking().SingleAsync(x => x.Email == "jordan@example.com");
+        Assert.Equal(EmploymentInterestStatus.New, saved.Status);
+        Assert.Null(saved.InternalNotes);
+        Assert.NotEqual(default, saved.CreatedAtUtc);
+    }
+
+    [Fact]
+    public async Task Employment_honeypot_and_too_fast_submissions_are_not_saved()
+    {
+        using var isolated = new KellumsApiFactory();
+        var client = isolated.CreateClient();
+        foreach (var payload in new object[] {
+            new { firstName="Bot", lastName="One", email="bot-one@example.com", workInterest="Crew", companyWebsite="spam.example", elapsedMs=30000 },
+            new { firstName="Bot", lastName="Two", email="bot-two@example.com", workInterest="Crew", companyWebsite="", elapsedMs=1 },
+        }) Assert.Equal(HttpStatusCode.Created, (await client.PostAsJsonAsync("/api/employment-interests", payload)).StatusCode);
+
+        using var scope = isolated.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<KellumsDbContext>();
+        Assert.False(await db.EmploymentInterests.AnyAsync(x => x.Email.StartsWith("bot-")));
+    }
+
+    [Fact]
+    public async Task Invalid_employment_contact_details_return_validation_errors()
+    {
+        using var isolated = new KellumsApiFactory();
+        var response = await isolated.CreateClient().PostAsJsonAsync("/api/employment-interests", new
+        { firstName="", lastName="", email="not-an-email", phone="abc", preferredContactMethod="CarrierPigeon", workInterest="" });
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     /* ------------------------------------------------------- caching */
@@ -278,6 +487,8 @@ public class ApiIntegrationTests(KellumsApiFactory factory) : IClassFixture<Kell
     [InlineData("/api/admin/estimate-requests")]
     [InlineData("/api/admin/estimate-requests/1")]
     [InlineData("/api/admin/estimate-requests/project-types")]
+    [InlineData("/api/admin/employment-interests")]
+    [InlineData("/api/admin/employment-interests/1")]
     [InlineData("/api/admin/projects")]
     [InlineData("/api/admin/projects/1")]
     [InlineData("/api/admin/services")]
@@ -285,6 +496,7 @@ public class ApiIntegrationTests(KellumsApiFactory factory) : IClassFixture<Kell
     [InlineData("/api/admin/faqs")]
     [InlineData("/api/admin/service-areas")]
     [InlineData("/api/admin/site-settings")]
+    [InlineData("/api/admin/gallery")]
     public async Task Admin_endpoints_reject_anonymous_reads_with_401(string path)
     {
         var response = await Client().GetAsync(path);
@@ -307,10 +519,17 @@ public class ApiIntegrationTests(KellumsApiFactory factory) : IClassFixture<Kell
     [InlineData("PUT", "/api/admin/estimate-requests/1/status")]
     [InlineData("POST", "/api/admin/estimate-requests/1/notes")]
     [InlineData("DELETE", "/api/admin/estimate-requests/1/notes/1")]
+    [InlineData("POST", "/api/admin/estimate-requests/1/notification/retry")]
+    [InlineData("PUT", "/api/admin/employment-interests/1")]
+    [InlineData("POST", "/api/admin/employment-interests/1/notification/retry")]
     // Projects
     [InlineData("POST", "/api/admin/projects")]
     [InlineData("PUT", "/api/admin/projects/1")]
     [InlineData("DELETE", "/api/admin/projects/1")]
+    [InlineData("POST", "/api/admin/gallery/upload")]
+    [InlineData("PUT", "/api/admin/gallery/1")]
+    [InlineData("DELETE", "/api/admin/gallery/1")]
+    [InlineData("POST", "/api/admin/gallery/reorder")]
     // Project photographs
     [InlineData("POST", "/api/admin/projects/1/images")]
     [InlineData("PUT", "/api/admin/projects/1/images/1")]
@@ -359,6 +578,8 @@ public class ApiIntegrationTests(KellumsApiFactory factory) : IClassFixture<Kell
     [InlineData("PUT", "/api/admin/site-settings")]
     [InlineData("POST", "/api/admin/testimonials")]
     [InlineData("PUT", "/api/admin/estimate-requests/1/status")]
+    [InlineData("POST", "/api/admin/estimate-requests/1/notification/retry")]
+    [InlineData("POST", "/api/admin/employment-interests/1/notification/retry")]
     public async Task A_valid_antiforgery_token_does_not_stand_in_for_signing_in(
         string method,
         string path)
@@ -459,4 +680,57 @@ public class ApiIntegrationTests(KellumsApiFactory factory) : IClassFixture<Kell
     private sealed record ValidationProblemResponse(Dictionary<string, string[]>? Errors);
 
     private sealed record AntiforgeryResponse(string Token);
+}
+
+public sealed class ProductionKellumsApiFactory : KellumsApiFactory
+{
+    protected override string AppEnvironment => Environments.Production;
+}
+
+public sealed class ProductionSeoIntegrationTests(ProductionKellumsApiFactory factory)
+    : IClassFixture<ProductionKellumsApiFactory>
+{
+    [Fact]
+    public async Task Production_public_html_remains_indexable()
+    {
+        var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("https://host-header.example"),
+            AllowAutoRedirect = false,
+        });
+
+        var response = await client.GetAsync("/");
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.False(response.Headers.Contains("X-Robots-Tag"));
+        Assert.Contains("name=\"robots\" content=\"index, follow, max-image-preview:large\" data-runtime-indexing=\"enabled\"", html);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(html, "name=\\\"robots\\\"").Cast<System.Text.RegularExpressions.Match>());
+        Assert.DoesNotContain("noindex", html, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("property=\"og:title\"", html);
+        Assert.Contains("rel=\"canonical\" href=\"https://kellumssecondchance.com/\"", html);
+        Assert.Contains("property=\"og:url\" content=\"https://kellumssecondchance.com/\"", html);
+        Assert.Contains("property=\"og:image\" content=\"https://kellumssecondchance.com/media/social/social-thumbnail-1.png\"", html);
+        Assert.DoesNotContain("host-header.example", html, StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+public sealed class MissingProductionSiteUrlFactory : KellumsApiFactory
+{
+    protected override string AppEnvironment => Environments.Production;
+    protected override string? ProductionSiteUrl => null;
+}
+
+public sealed class ProductionConfigurationIntegrationTests
+{
+    [Fact]
+    public async Task Production_fails_startup_without_an_authoritative_site_url()
+    {
+        using var factory = new MissingProductionSiteUrlFactory();
+
+        var exception = await Assert.ThrowsAnyAsync<Exception>(
+            async () => await factory.CreateClient().GetAsync("/"));
+
+        Assert.Contains("Production:SiteUrl must be an absolute HTTPS URL", exception.ToString());
+    }
 }

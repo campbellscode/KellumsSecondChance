@@ -70,9 +70,9 @@ public class DatabaseSeeder(
     {
         if (!await db.RenovationServices.AnyAsync(ct))
         {
-            db.RenovationServices.AddRange(SampleContent.Services());
+            db.RenovationServices.AddRange(ConfirmedBusinessContent.Services());
             await db.SaveChangesAsync(ct);
-            logger.LogInformation("Seeded the sample service catalogue.");
+            logger.LogInformation("Seeded the confirmed exterior service catalogue.");
         }
 
         if (!await db.RenovationProjects.AnyAsync(ct))
@@ -117,16 +117,16 @@ public class DatabaseSeeder(
 
         if (!await db.FaqItems.AnyAsync(ct))
         {
-            db.FaqItems.AddRange(SampleContentSupport.Faqs());
+            db.FaqItems.AddRange(ConfirmedBusinessContent.Faqs());
             await db.SaveChangesAsync(ct);
             logger.LogInformation("Seeded the FAQ content.");
         }
 
         if (!await db.ServiceAreas.AnyAsync(ct))
         {
-            db.ServiceAreas.AddRange(SampleContentSupport.ServiceAreas());
+            db.ServiceAreas.AddRange(ConfirmedBusinessContent.ServiceAreas());
             await db.SaveChangesAsync(ct);
-            logger.LogInformation("Seeded placeholder service areas.");
+            logger.LogInformation("Seeded the confirmed primary service area.");
         }
     }
 

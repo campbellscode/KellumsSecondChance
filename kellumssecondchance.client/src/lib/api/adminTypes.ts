@@ -24,6 +24,20 @@ import type {
 
 /* ---------------------------------------------------------------- projects */
 
+export interface AdminGalleryImage {
+  readonly id: number;
+  readonly imageUrl: string;
+  readonly originalFileName: string;
+  readonly altText: string;
+  readonly caption: string | null;
+  readonly width: number;
+  readonly height: number;
+  readonly isActive: boolean;
+  readonly displayOrder: number;
+  readonly isUploaded: boolean;
+  readonly fileSizeBytes: number | null;
+}
+
 export interface AdminProjectImage {
   readonly id: number;
   readonly src: string;
@@ -296,6 +310,7 @@ export interface AdminSiteSettings {
   readonly officeHours: readonly OfficeHours[];
   readonly siteUrl: string | null;
   readonly ogImagePath: string | null;
+  readonly googleReviewUrl: string | null;
 }
 
 /** Same shape; a blank string clears the stored value. */
@@ -347,6 +362,18 @@ export interface AdminEstimateRequestDetail {
     readonly internalNotes: string | null;
     readonly createdAtUtc: string;
     readonly updatedAtUtc: string | null;
+    readonly landingPage?: string | null;
+    readonly referrerUrl?: string | null;
+    readonly utmSource?: string | null;
+    readonly utmMedium?: string | null;
+    readonly utmCampaign?: string | null;
+    readonly utmTerm?: string | null;
+    readonly utmContent?: string | null;
+    readonly notificationAttemptCount?: number;
+    readonly notificationAttemptedAtUtc?: string | null;
+    readonly notificationDeliveredAtUtc?: string | null;
+    readonly notificationFailedAtUtc?: string | null;
+    readonly notificationFailureCategory?: string | null;
   };
   readonly notes: readonly EstimateRequestNote[];
   readonly history: readonly EstimateRequestStatusHistoryEntry[];

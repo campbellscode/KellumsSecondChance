@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { useScrollReveal } from './useScrollReveal';
 
 /**
@@ -94,6 +94,17 @@ describe('useScrollReveal', () => {
     trigger?.([{ isIntersecting: true, target: clipped! } as unknown as IntersectionObserverEntry]);
 
     expect(clipped?.getAttribute('data-reveal-clip')).toBe('is-visible');
+  });
+
+  it('observes reveal targets inserted after the initial render', async () => {
+    render(<Harness />);
+    const lateCard = document.createElement('figure');
+    lateCard.setAttribute('data-reveal', 'true');
+
+    document.body.append(lateCard);
+
+    await waitFor(() => expect(observed).toContain(lateCard));
+    lateCard.remove();
   });
 
   it('leaves an element alone until it actually intersects', () => {

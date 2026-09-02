@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1250" width="1000" height="1250" role="presentation" preserveAspectRatio="xMidYMid slice">
+
+  <defs>
+    <linearGradient id="g-ceil-carpentryafter85557" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbf9f6"/>
+      <stop offset="1" stop-color="#e3dbd1"/>
+    </linearGradient>
+    <linearGradient id="g-back-carpentryafter85557" x1="0" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#f5eee1"/>
+      <stop offset="0.62" stop-color="#efe8de"/>
+      <stop offset="1" stop-color="#dcd2c5"/>
+    </linearGradient>
+    <linearGradient id="g-side-carpentryafter85557" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#d7ccbe"/>
+      <stop offset="1" stop-color="#eae1d4"/>
+    </linearGradient>
+    <linearGradient id="g-floor-carpentryafter85557" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#d1b28e"/>
+      <stop offset="0.55" stop-color="#b98f60"/>
+      <stop offset="1" stop-color="#966c43"/>
+    </linearGradient>
+    <linearGradient id="g-shaft-carpentryafter85557" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#fff6e6" stop-opacity="0.52"/>
+      <stop offset="1" stop-color="#fff6e6" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="g-glass-carpentryafter85557" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#fcfdfe"/>
+      <stop offset="1" stop-color="#e3eaef"/>
+    </linearGradient>
+    <linearGradient id="g-counter-carpentryafter85557" x1="0" y1="0" x2="1" y2="0.4">
+      <stop offset="0" stop-color="#f4f2ef"/>
+      <stop offset="1" stop-color="#e9e5df"/>
+    </linearGradient>
+    <linearGradient id="g-sky-carpentryafter85557" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eaeff3"/>
+      <stop offset="1" stop-color="#efefe9"/>
+    </linearGradient>
+    <radialGradient id="g-vig-carpentryafter85557" cx="0.5" cy="0.44" r="0.78">
+      <stop offset="0.45" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#100d0a" stop-opacity="0.3"/>
+    </radialGradient>
+    <filter id="f-grain-carpentryafter85557" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch" result="n"/>
+      <feColorMatrix type="saturate" values="0" in="n" result="d"/>
+      <feComponentTransfer in="d"><feFuncA type="linear" slope="0.11"/></feComponentTransfer>
+    </filter>
+    <filter id="f-soft-carpentryafter85557" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="16"/>
+    </filter>
+  </defs>
+  <g><rect width="1000" height="1250" fill="url(#g-back-carpentryafter85557)"/><rect x="0" y="0" width="1000" height="87.5" fill="#faf7f2"/><path d="M0 87.5 H1000" stroke="#d4c9ba" stroke-opacity="0.5" stroke-width="3"/><path d="M0 56.25 H1000" stroke="#d4c9ba" stroke-opacity="0.3" stroke-width="2"/><rect x="0" y="425" width="1000" height="650" fill="#f7f3ec"/><rect x="0" y="411" width="1000" height="16" fill="#faf7f2"/><rect x="40" y="451" width="154" height="588" fill="none" stroke="#d4c9ba" stroke-opacity="0.42" stroke-width="4"/><rect x="49" y="460" width="136" height="570" fill="none" stroke="#d4c9ba" stroke-opacity="0.2" stroke-width="2"/><rect x="224" y="451" width="154" height="588" fill="none" stroke="#d4c9ba" stroke-opacity="0.42" stroke-width="4"/><rect x="233" y="460" width="136" height="570" fill="none" stroke="#d4c9ba" stroke-opacity="0.2" stroke-width="2"/><rect x="408" y="451" width="154" height="588" fill="none" stroke="#d4c9ba" stroke-opacity="0.42" stroke-width="4"/><rect x="417" y="460" width="136" height="570" fill="none" stroke="#d4c9ba" stroke-opacity="0.2" stroke-width="2"/><rect x="592" y="451" width="154" height="588" fill="none" stroke="#d4c9ba" stroke-opacity="0.42" stroke-width="4"/><rect x="601" y="460" width="136" height="570" fill="none" stroke="#d4c9ba" stroke-opacity="0.2" stroke-width="2"/><rect x="776" y="451" width="154" height="588" fill="none" stroke="#d4c9ba" stroke-opacity="0.42" stroke-width="4"/><rect x="785" y="460" width="136" height="570" fill="none" stroke="#d4c9ba" stroke-opacity="0.2" stroke-width="2"/><rect x="0" y="1075" width="1000" height="62.5" fill="#faf7f2"/><rect x="0" y="1137.5" width="1000" height="112.5" fill="url(#g-floor-carpentryafter85557)"/><rect x="720" y="112.5" width="240" height="962.5" fill="#d0c8bd"/><rect x="700" y="87.5" width="280" height="987.5" fill="none" stroke="#faf7f2" stroke-width="16"/><circle cx="200" cy="250" r="200" fill="#fff6e6" opacity="0.34" filter="url(#f-soft-carpentryafter85557)"/></g>
+  <rect width="1000" height="1250" filter="url(#f-grain-carpentryafter85557)" opacity="0.55" style="mix-blend-mode:multiply"/>
+  <rect width="1000" height="1250" fill="url(#g-vig-carpentryafter85557)"/>
+</svg>

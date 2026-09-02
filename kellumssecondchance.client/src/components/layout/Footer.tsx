@@ -4,7 +4,7 @@ import styles from './Footer.module.css';
 import { Logo } from '@/components/brand/Logo';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
-import { business, isProvided } from '@/content/business';
+import { isProvided } from '@/content/business';
 import { footerNav, footerServiceLinks, legalNav } from '@/content/navigation';
 import { useSiteContent } from '@/lib/siteContentContext';
 
@@ -19,7 +19,7 @@ export function Footer() {
           <div className={styles.brandBlock}>
             <Logo size={92} tone="onDark" className={styles.footerLogo} />
             <p className={styles.footerTagline}>{site.tagline}</p>
-            <p className={styles.pitch}>{business.promise}</p>
+            <p className={styles.pitch}>We believe in what a home can become—and what a person can become. Craftsmanship with purpose, built for what comes next.</p>
             <Button as="link" to="/request-estimate" iconRight={<ArrowUpRight size={17} />}>
               Give Your Home Its Second Chance
             </Button>

@@ -34,7 +34,7 @@ const REASSURANCE = [
 
 const WHAT_HAPPENS = [
   'We read what you sent and get back to you.',
-  'We arrange a time to come and look at the space.',
+  'We discuss the property and the exterior work you have in mind.',
   'You get a written plan and a price before anything starts.',
 ];
 
@@ -49,15 +49,15 @@ export default function EstimatePage() {
     <>
       <Seo
         title="Request an Estimate"
-        description="Tell us what needs a second chance. Four short steps, a real reply, and a written plan before anything starts."
+        description="Request an estimate for exterior renovation, repair or restoration work in Cincinnati, Ohio."
         path="/request-estimate"
         structuredData={structuredData}
       />
 
       <PageHero
-        eyebrow="Let's talk about your space"
+        eyebrow="Let's talk about your exterior"
         title="Tell us what needs a second chance."
-        lead="You do not need a plan, a budget you are sure of, or the right words for it. Tell us what is bothering you about the room and we will take it from there."
+        lead="Tell us what is happening with your home’s exterior and what you would like changed."
         crumbs={CRUMBS}
         layout="plain"
       />

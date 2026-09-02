@@ -156,7 +156,7 @@ public static class SampleContent
             "New hardwood flooring installed wall to wall with fresh baseboard."),
 
         Service(6, "drywall-and-painting", "Drywall & Painting", "The finish everyone sees", "paint-roller",
-            "Hanging, taping, patching and painting — including the repairs that make a room look renovated rather than touched up.",
+            "Hanging, taping, patching and painting — including repairs that make the finished work look complete rather than touched up.",
             "The surface people actually look at.",
             "Drywall is where careless work is most obvious. Light rakes across a wall and shows every seam, every nail pop, every patch that was floated too tight. We take the extra passes, because a beautiful kitchen with a wavy wall behind it still reads as a cheap job.",
             [
@@ -179,7 +179,7 @@ public static class SampleContent
             ],
             "Smooth new drywall and freshly painted trim in a renovated room."),
 
-        Service(7, "carpentry-and-trim", "Carpentry & Trim", "The details that make a room feel finished", "ruler",
+        Service(7, "carpentry-and-trim", "Carpentry & Trim", "The details that make a project feel finished", "ruler",
             "Baseboard, casing, crown, wainscoting, built-ins and stair work — tight joints and clean reveals.",
             "This is where craftsmanship is visible.",
             "Trim carpentry is the part of a renovation people run their hand along. Mitres that stay closed through a season of humidity, reveals that are consistent from one door to the next, scribes that follow a wall that has not been plumb since 1948. It is slow work and it is worth it.",
@@ -389,9 +389,9 @@ public static class SampleContent
             "Harborview", new DateOnly(2025, 6, 9), "Approximately four weeks", "Single-family home", true,
             "Failed grout had been quietly letting water into the subfloor for years. The room was taken back to framing and rebuilt to stay dry.",
             "The homeowners called about replacing a vanity. During the walkthrough the floor flexed near the shower curb — never a good sign. Grout at the base of the surround had failed long ago, and water had been travelling into the subfloor on every shower since. The vanity was the least of the problem.",
-            "Once we showed them what was under the tile, the conversation changed from cosmetic to structural. They wanted it done once and done right: a shower that would not leak again, a floor that felt solid, and a room that finally matched the rest of a house they had recently updated.",
+            "Once we showed them what was under the tile, the conversation changed from cosmetic to structural. They wanted it done once and done right: a shower that would not leak again, a floor that felt solid, and a finished space that finally matched the rest of a house they had recently updated.",
             "Full demolition to framing. Damaged subfloor and two joist sections were repaired, the shower was rebuilt with a proper sloped base and a bonded waterproofing membrane, and the whole room was re-tiled. A floating vanity with a solid surface top, a frameless glass enclosure, new ventilation and blocking installed behind the walls for future grab bars.",
-            "A room the homeowners can stop worrying about. The blocking behind the tile means accessibility hardware can be added later without opening anything back up.",
+            "A part of the house the homeowners can stop worrying about. The blocking behind the tile means accessibility hardware can be added later without opening anything back up.",
             [
                 "Subfloor and joist repair after long-term water intrusion",
                 "Shower rebuilt with bonded waterproofing membrane",
@@ -411,7 +411,7 @@ public static class SampleContent
             "Oakridge", new DateOnly(2025, 2, 27), "Approximately seven weeks", "Single-family home", true,
             "An unfinished basement used for boxes and a treadmill became the room the family spends most evenings in.",
             "Bare block walls, exposed joists, one bare bulb and a slab that got cold enough in February that nobody went down there. The family had outgrown their main floor but did not want to move. The obvious answer was already in the house — it was just being used to store things nobody had opened in six years.",
-            "A room that felt like part of the house rather than a basement with furniture in it. Warm, properly lit despite low ceilings, with enough built-in storage that the boxes had somewhere to go.",
+            "A finished part of the house rather than a basement with furniture in it. Warm, properly lit despite low ceilings, with enough built-in storage that the boxes had somewhere to go.",
             "We started with a moisture assessment and confirmed the basement was dry. Framing and insulation went in against the block, ductwork was reworked to preserve height, and lighting was laid out for a low ceiling — recessed cans on a tight grid rather than a few bright fixtures. A shiplap media wall, built-in base cabinetry along one side, and flooring rated for below-grade use.",
             "The family got a second living space without moving house, and the storage they lost was replaced by built-ins that hold considerably more.",
             [

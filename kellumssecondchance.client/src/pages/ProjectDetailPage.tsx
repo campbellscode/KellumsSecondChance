@@ -219,7 +219,7 @@ export default function ProjectDetailPage() {
 
               <div className={styles.panelCta} data-theme="dark">
                 <p className={styles.panelCtaText}>
-                  Got a room like this one? Tell us about it — the first conversation costs nothing.
+                  Got an exterior project like this one? Tell us about it — the first conversation costs nothing.
                 </p>
                 <Button as="link" to="/request-estimate" fullWidth>
                   Request an estimate

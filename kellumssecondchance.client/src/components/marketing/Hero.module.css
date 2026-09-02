@@ -183,7 +183,13 @@
 }
 
 /* ---- Showcase ---------------------------------------------------------- */
-.showcase { position: relative; min-width: 0; }
+.showcase {
+  position: relative;
+  justify-self: end;
+  width: 100%;
+  max-width: 40.625rem;
+  min-width: 0;
+}
 
 .sliderFrame {
   position: relative;
@@ -239,9 +245,6 @@
   color: var(--color-muted);
 }
 
-/* Overlapping portrait detail — only on wide screens where it has room. */
-.detail { display: none; }
-
 /* ---- Scroll cue -------------------------------------------------------- */
 .scrollCue {
   display: none;
@@ -289,15 +292,4 @@
 
 @media (min-width: 90rem) {
   .inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); }
-
-  .detail {
-    display: block;
-    position: absolute;
-    inset-block-end: -3.25rem;
-    inset-inline-start: -4.5rem;
-    width: 12.5rem;
-    border: 6px solid var(--ink-950);
-    box-shadow: var(--shadow-xl);
-    z-index: 2;
-  }
 }

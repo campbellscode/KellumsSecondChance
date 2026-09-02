@@ -61,6 +61,7 @@ public class SiteSettingsWriteService(
         public const string OfficeHours = "business.officeHours";
         public const string SiteUrl = "business.siteUrl";
         public const string OgImagePath = "business.ogImagePath";
+        public const string GoogleReviewUrl = "business.googleReviewUrl";
 
         /// <summary>
         /// Storage key of an UPLOADED social card, written only by the upload
@@ -97,7 +98,8 @@ public class SiteSettingsWriteService(
             ParseSocialLinks(Get(Keys.SocialLinks)),
             ParseOfficeHours(Get(Keys.OfficeHours)),
             Get(Keys.SiteUrl),
-            Get(Keys.OgImagePath));
+            Get(Keys.OgImagePath),
+            Get(Keys.GoogleReviewUrl));
     }
 
     public async Task<WriteResult<AdminSiteSettingsDto>> SaveAsync(
@@ -197,6 +199,14 @@ public class SiteSettingsWriteService(
             }
         }
 
+        var googleReviewUrl = Clean(dto.GoogleReviewUrl);
+        if (googleReviewUrl is not null && (!Uri.TryCreate(googleReviewUrl, UriKind.Absolute, out var reviewUri)
+            || reviewUri.Scheme != Uri.UriSchemeHttps))
+        {
+            return WriteResult<AdminSiteSettingsDto>.Invalid(
+                nameof(dto.GoogleReviewUrl), "Enter the full Google review address starting with https://");
+        }
+
         foreach (var link in dto.SocialLinks)
         {
             /*
@@ -233,6 +243,7 @@ public class SiteSettingsWriteService(
             [Keys.FoundedYear] = dto.FoundedYear?.ToString(),
             [Keys.SiteUrl] = siteUrl,
             [Keys.OgImagePath] = ogImagePath,
+            [Keys.GoogleReviewUrl] = googleReviewUrl,
             [Keys.OfficeHours] = dto.OfficeHours.Count == 0
                 ? null
                 : JsonSerializer.Serialize(

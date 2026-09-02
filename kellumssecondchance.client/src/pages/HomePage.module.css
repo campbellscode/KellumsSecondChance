@@ -61,3 +61,8 @@
   .serviceFeature { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .reviewGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+.opportunity {
+  padding-block: var(--section-y);
+  background: var(--bone-50);
+  border-block-start: 1px solid var(--color-border);
+}

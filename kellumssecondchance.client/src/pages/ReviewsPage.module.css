@@ -1,3 +1,8 @@
+.reviewsPhoto {
+  border-inline-end: 1px solid var(--copper-400);
+  border-block-end: 1px solid var(--copper-400);
+}
+
 .aggregate {
   display: flex;
   align-items: center;

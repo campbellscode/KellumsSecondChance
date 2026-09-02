@@ -111,11 +111,11 @@ export const sampleProjects: readonly ProjectDetail[] = [
     challenge:
       'The homeowners called about replacing a vanity. During the walkthrough the floor flexed near the shower curb — never a good sign. Grout at the base of the surround had failed long ago, and water had been travelling into the subfloor on every shower since. The vanity was the least of the problem.',
     vision:
-      'Once we showed them what was under the tile, the conversation changed from cosmetic to structural. They wanted it done once and done right: a shower that would not leak again, a floor that felt solid, and a room that finally matched the rest of a house they had recently updated.',
+      'Once we showed them what was under the tile, the conversation changed from cosmetic to structural. They wanted it done once and done right: a shower that would not leak again, a floor that felt solid, and a finished space that finally matched the rest of a house they had recently updated.',
     transformation:
       'Full demolition to framing. Damaged subfloor and two joist sections were repaired, the shower was rebuilt with a proper sloped base and a bonded waterproofing membrane, and the whole room was re-tiled. A floating vanity with a solid surface top, a frameless glass enclosure, new ventilation and blocking installed behind the walls for future grab bars.',
     outcome:
-      'A room the homeowners can stop worrying about. The blocking behind the tile means accessibility hardware can be added later without opening anything back up.',
+      'A part of the house the homeowners can stop worrying about. The blocking behind the tile means accessibility hardware can be added later without opening anything back up.',
     durationLabel: 'Approximately four weeks',
     propertyType: 'Single-family home',
     serviceSlugs: ['bathroom-renovations', 'repair-and-restoration', 'carpentry-and-trim'],
@@ -159,7 +159,7 @@ export const sampleProjects: readonly ProjectDetail[] = [
     challenge:
       'Bare block walls, exposed joists, one bare bulb and a slab that got cold enough in February that nobody went down there. The family had outgrown their main floor but did not want to move. The obvious answer was already in the house — it was just being used to store things nobody had opened in six years.',
     vision:
-      'A room that felt like part of the house rather than a basement with furniture in it. Warm, properly lit despite low ceilings, with enough built-in storage that the boxes had somewhere to go.',
+      'A finished part of the house rather than a basement with furniture in it. Warm, properly lit despite low ceilings, with enough built-in storage that the boxes had somewhere to go.',
     transformation:
       'We started with a moisture assessment and confirmed the basement was dry. Framing and insulation went in against the block, ductwork was reworked to preserve height, and lighting was laid out for a low ceiling — recessed cans on a tight grid rather than a few bright fixtures. A shiplap media wall, built-in base cabinetry along one side, and flooring rated for below-grade use.',
     outcome:

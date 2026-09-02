@@ -17,13 +17,22 @@ const SECTIONS: readonly LegalSection[] = [
         <p>
           The only information we collect is what you type into a form on this site. That is your
           name, email address, phone number if you give one, the property location details you
-          choose to share, and your description of the project.
+          choose to share, and your description of the project. If you contact us through the Work
+          With Us page, it also includes the work experience, skills, interests, availability and
+          message you choose to provide. That form does not ask for criminal, medical or other
+          sensitive background information.
         </p>
         <p>
           We also record the date and time your request arrived. For anti-spam purposes we store a
           one-way fingerprint of the network address the request came from — a scrambled value that
           lets us spot repeated automated submissions but cannot be turned back into an address. The
           address itself is never written down.
+        </p>
+        <p>
+          For renovation enquiries, we may also keep the first page visited, an external referring
+          page, and campaign labels such as source, medium and campaign. These first-party details
+          help us understand how an enquiry found us; they do not contain the form message or create
+          a cross-site profile.
         </p>
       </>
     ),
@@ -34,9 +43,9 @@ const SECTIONS: readonly LegalSection[] = [
     body: (
       <>
         <p>
-          To reply to your enquiry, arrange a visit and prepare an estimate. That is the whole
-          purpose. We do not build a profile of you and we do not use it for anything you did not
-          contact us about.
+          To reply to a renovation enquiry, arrange a visit and prepare an estimate; or to consider
+          and respond to an employment-interest enquiry. We do not build a marketing profile of you
+          or use the information for an unrelated purpose.
         </p>
       </>
     ),
@@ -70,9 +79,9 @@ const SECTIONS: readonly LegalSection[] = [
     heading: 'How long we keep it',
     body: (
       <p>
-        Estimate requests are kept for as long as they are useful to the business — to follow up, to
-        reference past work, and to keep records of jobs we have quoted. If you would like your
-        enquiry deleted, ask us and we will remove it.
+        Estimate and employment-interest requests are kept for as long as they are useful for the
+        purpose you contacted us about and for reasonable business records. If you would like your
+        enquiry deleted, ask us and we will remove it where we are able to do so.
       </p>
     ),
   },

@@ -11,8 +11,16 @@
 /* ---- Media stack ------------------------------------------------------- */
 .media { position: relative; min-width: 0; }
 
+.mediaStack {
+  position: relative;
+  width: min(100%, 22rem);
+  margin-inline: auto;
+  padding-block-end: clamp(3.5rem, 18vw, 7rem);
+}
+
 .mediaPrimary {
   position: relative;
+  width: min(100%, 18rem);
   box-shadow: var(--shadow-lg);
 }
 
@@ -29,12 +37,11 @@
 }
 
 .mediaSecondary {
-  display: none;
   position: absolute;
-  inset-block-end: -2.75rem;
-  inset-inline-end: -2.25rem;
-  width: 58%;
-  border: 8px solid var(--bone-0);
+  inset-block-end: 0;
+  inset-inline-end: clamp(0.5rem, 3vw, 1.75rem);
+  width: clamp(8.5rem, 44%, 15rem);
+  border: clamp(4px, 1vw, 8px) solid var(--bone-0);
   box-shadow: var(--shadow-lg);
   z-index: 2;
 }
@@ -124,6 +131,10 @@
     align-items: center;
     gap: clamp(4rem, 8vw, 8rem);
   }
-  .mediaSecondary { display: block; }
+  .mediaStack { padding-block-end: clamp(4.5rem, 8vw, 7rem); }
+  .mediaSecondary {
+    inset-inline-end: -1.5rem;
+    width: min(46%, 15rem);
+  }
   .mediaCaption { padding-block-start: 1.15rem; }
 }

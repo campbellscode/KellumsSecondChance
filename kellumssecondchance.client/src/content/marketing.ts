@@ -16,7 +16,7 @@ export const trustPoints: readonly TrustPoint[] = [
   {
     icon: 'hammer',
     title: 'Quality Craftsmanship',
-    description: 'Tight joints, flat walls, square openings. The details you notice and the ones you never will.',
+    description: 'Careful exterior renovation, repair and restoration work for your home.',
   },
   {
     icon: 'message-circle',
@@ -48,28 +48,28 @@ export interface ValueProp {
 
 export const whyKellums: readonly ValueProp[] = [
   {
-    icon: 'clock',
-    title: 'We show up.',
+    icon: 'sparkles',
+    title: 'We see the potential.',
     description:
-      'When we say Tuesday, we mean Tuesday. If something changes, you hear it from us first — with a plan attached, not an apology on its own.',
+      'We look at what a space — and a person — can become, then bring the care and effort needed to move it forward.',
   },
   {
     icon: 'hard-hat',
-    title: 'We build it right.',
+    title: 'We do the work.',
     description:
-      'The blocking behind the tile, the flashing at the ledger, the subfloor nobody photographs. That work decides whether a renovation lasts ten years or two.',
+      'Opportunity means little without accountability. Everyone representing Kellum’s is expected to learn, show up and build to one professional standard.',
   },
   {
     icon: 'home',
     title: 'We respect your home.',
     description:
-      'A renovation should not mean losing control of your house. Dust containment, protected floors and a site that gets cleaned every evening are not extras.',
+      'Exterior work happens at your home, so care for the property and clear communication both matter.',
   },
   {
-    icon: 'sparkles',
-    title: 'We care about the finish.',
+    icon: 'ruler',
+    title: 'We take pride in the details.',
     description:
-      'We walk the punch list with you and we do not call it done until you would. The last five percent is the part people live with.',
+      'The work behind the finish matters as much as the finish itself. We build carefully because what comes next should last.',
   },
   {
     icon: 'message-square-quote',
@@ -97,14 +97,14 @@ export const processSteps: readonly ProcessStep[] = [
     number: '01',
     title: 'Tell us what needs a second chance',
     description:
-      'A form, a phone call, or a few photos of the room that has been bothering you. You do not need a plan yet — that is our job.',
+      'Use the form, call, or send details about the exterior work you have in mind.',
     detail: 'Takes about five minutes',
   },
   {
     number: '02',
-    title: 'We walk the space',
+    title: 'We look at the property',
     description:
-      'Renovation work cannot be priced from a photograph. We come out, look at what is actually there, and tell you what we find — including anything you did not ask about.',
+      'We discuss the property and the exterior work you want to address before defining the project.',
     detail: 'On site, at your convenience',
   },
   {
@@ -116,33 +116,33 @@ export const processSteps: readonly ProcessStep[] = [
   },
   {
     number: '04',
-    title: 'We transform the space',
+    title: 'We complete the exterior work',
     description:
-      'Containment goes up, the work happens, and the site gets cleaned every evening. You get one point of contact and a straight answer whenever you want one.',
+      'The agreed exterior renovation, repair or restoration work moves forward.',
     detail: 'You always know what happens next',
   },
   {
     number: '05',
     title: 'You enjoy the difference',
     description:
-      'We walk it together, build the punch list together, and finish it. Then we get out of your house and let you have your room back.',
+      'We review the completed exterior project with you.',
     detail: 'Finished means finished',
   },
 ];
 
 export const storySection = {
-  eyebrow: 'The Second Chance Story',
-  title: 'Homes do not always need replacing. Sometimes they need somebody to see what they could be.',
+  eyebrow: 'Our purpose',
+  title: 'Second chances are what we build.',
   paragraphs: [
-    'Almost every house has a room that got written off. The kitchen everyone works around. The basement full of boxes. The bathroom that has needed help since before you moved in. It is rarely that the room is beyond saving — it is that nobody has looked at it properly and said what it could become.',
-    'That is the whole idea behind the name. We take on outdated, worn, damaged, unfinished and underused spaces, and we give them a second chance. Not a patch. Not a cover-up. A genuine rebuild of the part of your home you had stopped believing in.',
-    'The work is not glamorous. It is measuring twice, protecting floors, flattening walls that have not been flat since the fifties, and caring about the joint that nobody will ever look at closely. That is the job, and we happen to love it.',
+    'We started with a simple belief: what something is today does not have to determine what it becomes tomorrow.',
+    'For homes, that means seeing beyond tired, weathered and damaged exteriors. We help homeowners see what the outside of their home can become.',
+    'We believe potential deserves to be seen in people, too. Kellum’s wants to create opportunities for people who are ready to work, learn, grow and take pride in building something exceptional.',
   ],
-  pullQuote: 'We would rather fix the cause than sell you a cover-up.',
+  pullQuote: 'Homes deserve second chances. People do too.',
 } as const;
 
 export const ctaSection = {
-  eyebrow: "Let's talk about your space",
+  eyebrow: "Let's talk about your exterior",
   title: 'What part of your home deserves a second chance?',
   body: "Tell us what you have been thinking about. We will help you figure out what comes next — even if that turns out to be waiting, or calling somebody else.",
 } as const;

@@ -248,7 +248,7 @@ public static partial class SampleContentSupport
                 "Confirm the formal warranty terms so they can be stated here as well as in the customer agreement."),
             Faq("completion", "Finishing Up",
                 "Do you clean up at the end?",
-                "Yes. Debris removed, surfaces cleaned, protection taken up, and the room handed back ready to use. A room that needs a deep clean before you can move back in is not a finished room."),
+                "Yes. Debris is removed, surfaces are cleaned, and protection is taken up before your property is handed back. Work that leaves you with a deep clean is not finished work."),
         ];
     }
 }

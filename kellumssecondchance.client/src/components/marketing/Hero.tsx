@@ -2,17 +2,16 @@ import { ArrowDown, ArrowUpRight, Phone } from 'lucide-react';
 import styles from './Hero.module.css';
 import { BeforeAfterSlider } from './BeforeAfterSlider';
 import { Button } from '@/components/ui/Button';
-import { Photo } from '@/components/ui/Photo';
 import { Roofline } from '@/components/brand/Roofline';
 import { heroMedia } from '@/content/media';
 import { business } from '@/content/business';
 import { useSiteContent } from '@/lib/siteContentContext';
 
 const SPECIALTIES = [
-  'Residential Renovations',
-  'Remodeling',
-  'Repairs & Restoration',
-  'Interior & Exterior',
+  'Roofing & Siding',
+  'Gutters & Downspouts',
+  'Decks & Porches',
+  'Exterior Repair & Restoration',
 ] as const;
 
 export function Hero() {
@@ -27,7 +26,7 @@ export function Hero() {
         <div className={styles.copy}>
           <p className={styles.kicker}>
             <Roofline variant="tick" className={styles.kickerTick} />
-            Residential renovation &amp; remodeling
+            Exterior renovation &amp; restoration · Cincinnati, Ohio
           </p>
 
           <h1 id="hero-heading" className={styles.headline}>
@@ -73,9 +72,9 @@ export function Hero() {
             <BeforeAfterSlider
               before={heroMedia.before}
               after={heroMedia.after}
-              label="Kitchen transformation"
+              label="Exterior transformation"
               initial={42}
-              ratio="landscape"
+              ratio="square"
               priority
               sizes="(min-width: 76rem) 46vw, (min-width: 48rem) 60vw, 92vw"
               className={styles.slider}
@@ -88,12 +87,6 @@ export function Hero() {
             </p>
           </div>
 
-          <Photo
-            image={heroMedia.detail}
-            ratio="portrait"
-            className={styles.detail}
-            sizes="(min-width: 76rem) 15vw, 0px"
-          />
         </div>
       </div>
 

@@ -61,7 +61,7 @@ export default function HomePage() {
     <>
       <Seo
         title={site.legalName}
-        description={`${business.promise} Kitchen, bathroom, basement and whole-home renovation for people who want the work done properly.`}
+        description={`${business.promise} Exterior renovation, repair and restoration services for Cincinnati homeowners.`}
         path="/"
         structuredData={structuredData}
       />
@@ -73,7 +73,6 @@ export default function HomePage() {
       {/* ---- The Second Chance Effect ------------------------------------ */}
       <TransformationFeature
         projects={transformations.data ?? []}
-        isSampleContent={hasSampleProjects}
       />
 
       {/* ---- Services ---------------------------------------------------- */}
@@ -83,8 +82,8 @@ export default function HomePage() {
             eyebrow="What we take on"
             eyebrowIndex="03"
             id="services-heading"
-            title="Rooms we bring back."
-            lead="From a single tired bathroom to a whole floor reworked — if it involves reshaping a space in a house, it is worth a conversation."
+            title="Exteriors we bring back."
+            lead="From roofing and siding to decks, storm-damage repair and exterior restoration, tell us what your home needs."
             action={
               <Button as="link" to="/services" variant="secondary" iconRight={<ArrowUpRight size={17} />}>
                 All services
@@ -149,7 +148,7 @@ export default function HomePage() {
             eyebrowIndex="04"
             id="projects-heading"
             title="See what is possible."
-            lead="Each of these is a full case study: what was wrong, what we did about it, and what the room is like now."
+            lead="Each published case study explains what was wrong, what we did about it, and how the exterior turned out."
             action={
               <Button as="link" to="/projects" variant="secondary" iconRight={<ArrowUpRight size={17} />}>
                 Every project
@@ -247,6 +246,19 @@ export default function HomePage() {
               </div>
             </>
           )}
+        </Container>
+      </section>
+
+      <section className={styles.opportunity} aria-labelledby="opportunity-heading">
+        <Container width="narrow">
+          <SectionHeading
+            eyebrow="Build what comes next"
+            eyebrowIndex="08"
+            id="opportunity-heading"
+            title="Good work can build more than a home exterior."
+            lead="If you are ready to work, learn and take pride in what you build, there may be a place for your next chapter at Kellum’s."
+            action={<Button as="link" to="/work-with-us" variant="secondary">Work With Us</Button>}
+          />
         </Container>
       </section>
 

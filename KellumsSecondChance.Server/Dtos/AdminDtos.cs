@@ -567,6 +567,9 @@ public class SiteSettingsWriteDto
     /// <summary>Root-relative path to a 1200x630 raster social card. Never SVG.</summary>
     [StringLength(300)]
     public string? OgImagePath { get; set; }
+
+    [StringLength(500)]
+    public string? GoogleReviewUrl { get; set; }
 }
 
 public class OfficeHoursWriteDto
@@ -615,7 +618,8 @@ public record AdminSiteSettingsDto(
     IReadOnlyList<SocialLinkDto> SocialLinks,
     IReadOnlyList<OfficeHoursDto> OfficeHours,
     string? SiteUrl,
-    string? OgImagePath);
+    string? OgImagePath,
+    string? GoogleReviewUrl);
 
 /* -------------------------------------------------------- estimate requests */
 

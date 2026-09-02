@@ -1,0 +1,20 @@
+.section { padding-block: var(--section-y); background: var(--bone-50); }
+.intro { display: grid; gap: .65rem; max-width: 64ch; margin-block-end: clamp(1.75rem,4vw,3rem); }
+.intro h2 { font-family: var(--font-display); font-size: var(--text-3xl); line-height: 1; color: var(--ink-950); }
+.intro p { color: var(--color-muted); line-height: var(--leading-relaxed); }
+.grid { columns: 1; column-gap: clamp(.75rem,1.5vw,1.2rem); list-style: none; margin: 0; padding: 0; }
+.item { break-inside: avoid; margin-block-end: clamp(.75rem,1.5vw,1.2rem); aspect-ratio: var(--ratio); overflow: hidden; background: var(--ink-800); border-block-start: 1px solid rgb(74 67 61 / .65); border-inline-start: 1px solid rgb(74 67 61 / .65); border-inline-end: 1px solid var(--copper-400); border-block-end: 1px solid var(--copper-400); }
+.open { width: 100%; height: 100%; display: block; overflow: hidden; cursor: zoom-in; }
+.open img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 1100ms var(--ease-out); }
+.open:focus-visible { outline: 3px solid var(--copper-300); outline-offset: -4px; }
+.overlay { position: fixed; inset: 0; z-index: var(--z-modal); display: grid; grid-template-columns: auto minmax(0,1fr) auto; place-items: center; gap: clamp(.3rem,2vw,1.5rem); padding: clamp(.75rem,3vw,2rem); background: rgb(12 10 9 / .94); backdrop-filter: blur(10px); }
+.lightbox { display: grid; place-items: center; gap: .7rem; min-width: 0; max-width: min(84vw,90rem); max-height: 90dvh; margin: 0; }
+.lightbox img { display: block; max-width: 100%; max-height: 82dvh; width: auto; height: auto; object-fit: contain; box-shadow: var(--shadow-xl); }
+.lightbox figcaption { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--stone-300); }
+.close,.step { display: grid; place-items: center; width: 3rem; height: 3rem; color: var(--bone-0); background: rgb(37 33 30 / .9); border: 1px solid rgb(232 225 216 / .25); border-radius: 50%; }
+.close { position: absolute; inset-block-start: max(.75rem,env(safe-area-inset-top)); inset-inline-end: max(.75rem,env(safe-area-inset-right)); }
+.close:focus-visible,.step:focus-visible { outline: 2px solid var(--copper-300); outline-offset: 3px; }
+@media (min-width: 40rem) { .grid { columns: 2; } }
+@media (min-width: 68rem) { .grid { columns: 3; } }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) { .open:hover img { transform: scale(1.055); } }
+@media (max-width: 32rem) { .overlay { grid-template-columns: 1fr; padding-block: 4.5rem 1rem; } .step { position: absolute; inset-block-end: max(1rem,env(safe-area-inset-bottom)); } .previous { inset-inline-start: 1rem; } .next { inset-inline-end: 1rem; } .lightbox img { max-height: 72dvh; } }

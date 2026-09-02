@@ -2,6 +2,8 @@ using System.Text;
 using System.Xml.Linq;
 using KellumsSecondChance.Server.Services;
 using Microsoft.AspNetCore.Mvc;
+using KellumsSecondChance.Server.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace KellumsSecondChance.Server.Controllers;
 
@@ -16,7 +18,7 @@ namespace KellumsSecondChance.Server.Controllers;
 /// serves correct absolute URLs on staging and production without a rebuild.
 /// </summary>
 [ApiController]
-public class SitemapController(IContentService content, IContentVersion contentVersion) : ControllerBase
+public class SitemapController(IContentService content, IContentVersion contentVersion, IOptions<ProductionOptions> production) : ControllerBase
 {
     private static readonly XNamespace Sitemap = "http://www.sitemaps.org/schemas/sitemap/0.9";
 
@@ -25,6 +27,7 @@ public class SitemapController(IContentService content, IContentVersion contentV
     [
         ("/", "1.0", "weekly"),
         ("/services", "0.9", "monthly"),
+        ("/gallery", "0.8", "monthly"),
         ("/projects", "0.9", "weekly"),
         ("/about", "0.7", "monthly"),
         ("/reviews", "0.7", "weekly"),
@@ -34,13 +37,15 @@ public class SitemapController(IContentService content, IContentVersion contentV
         ("/request-estimate", "0.9", "monthly"),
         ("/privacy", "0.2", "yearly"),
         ("/terms", "0.2", "yearly"),
+        ("/work-with-us", "0.5", "monthly"),
+        ("/bookings", "0.8", "monthly"),
     ];
 
     [HttpGet("/sitemap.xml")]
     [Produces("application/xml")]
     public async Task<IActionResult> GetSitemap(CancellationToken ct)
     {
-        var origin = $"{Request.Scheme}://{Request.Host}";
+        var origin = Origin();
         var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
 
         var urls = new List<XElement>();
@@ -88,7 +93,7 @@ public class SitemapController(IContentService content, IContentVersion contentV
     [Produces("text/plain")]
     public IActionResult Robots()
     {
-        var origin = $"{Request.Scheme}://{Request.Host}";
+        var origin = Origin();
 
         var body = string.Join('\n',
             "User-agent: *",
@@ -109,4 +114,6 @@ public class SitemapController(IContentService content, IContentVersion contentV
             new XElement(Sitemap + "lastmod", lastModified),
             new XElement(Sitemap + "changefreq", changeFrequency),
             new XElement(Sitemap + "priority", priority));
+
+    private string Origin() => production.Value.SiteUrl?.TrimEnd('/') ?? $"{Request.Scheme}://{Request.Host}";
 }

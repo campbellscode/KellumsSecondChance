@@ -72,6 +72,17 @@ public abstract class AdminWriteController : AdminApiController
     }
 }
 
+[Route("api/admin/media-integrity")]
+public sealed class AdminMediaIntegrityController(IMediaIntegrityService integrity) : AdminWriteController
+{
+    [HttpGet]
+    public async Task<ActionResult<MediaIntegrityReport>> Get(CancellationToken ct)
+    {
+        NoStore();
+        return Ok(await integrity.CheckAsync(ct));
+    }
+}
+
 /* ====================================================================== */
 /*  Projects                                                              */
 /* ====================================================================== */

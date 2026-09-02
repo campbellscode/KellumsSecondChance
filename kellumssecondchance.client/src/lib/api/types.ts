@@ -198,6 +198,7 @@ export interface SiteContent {
   readonly siteUrl: string | null;
   /** Root-relative raster social card. Null omits og:image entirely. */
   readonly ogImagePath: string | null;
+  readonly googleReviewUrl: string | null;
   readonly socialLinks: readonly SocialLink[];
   /**
    * Trading hours. EMPTY until the business supplies them — the site shows no
@@ -244,6 +245,9 @@ export interface EstimateRequestPayload {
   readonly description: string;
   readonly preferredContactMethod: PreferredContactMethod;
   readonly referralSource: string | null;
+  readonly landingPage: string | null; readonly referrerUrl: string | null;
+  readonly utmSource: string | null; readonly utmMedium: string | null; readonly utmCampaign: string | null;
+  readonly utmTerm: string | null; readonly utmContent: string | null;
   /** Honeypot. Must stay empty; a value means a bot filled the hidden field. */
   readonly companyWebsite: string | null;
   /** Milliseconds the visitor spent on the form. Sub-second fills are rejected. */
@@ -259,6 +263,16 @@ export interface EstimateRequestResult {
 /* --------------------------------------------------------------- errors */
 
 /** RFC 9457 problem details, as produced by ASP.NET Core. */
+export interface GalleryImage {
+  readonly id: number;
+  readonly imageUrl: string;
+  readonly altText: string;
+  readonly caption: string | null;
+  readonly width: number;
+  readonly height: number;
+  readonly displayOrder: number;
+}
+
 export interface ProblemDetails {
   readonly type?: string;
   readonly title?: string;

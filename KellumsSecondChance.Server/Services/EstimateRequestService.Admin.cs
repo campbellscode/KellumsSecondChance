@@ -311,12 +311,18 @@ public partial class EstimateRequestService : IEstimateRequestAdminService
         r.Id, r.Reference, r.FirstName, r.LastName, r.Email, r.Phone,
         r.ProjectTypeSlugs, r.PropertyType, r.AddressLine, r.City, r.PostalCode,
         r.Timeline, r.BudgetRange, r.Description, r.PreferredContactMethod,
-        r.ReferralSource, r.Status, r.InternalNotes, r.CreatedAtUtc, r.UpdatedAtUtc);
+        r.ReferralSource, r.Status, r.InternalNotes, r.CreatedAtUtc, r.UpdatedAtUtc,
+        r.LandingPage, r.ReferrerUrl, r.UtmSource, r.UtmMedium, r.UtmCampaign, r.UtmTerm,
+        r.UtmContent, r.NotificationAttemptCount, r.NotificationAttemptedAtUtc,
+        r.NotificationDeliveredAtUtc, r.NotificationFailedAtUtc, r.NotificationFailureCategory);
 
     /// <summary>Same shape as ToAdminDto, in a form EF can translate to SQL.</summary>
     private static AdminEstimateRequestDto ToAdminDtoExpression(EstimateRequest r) => new(
         r.Id, r.Reference, r.FirstName, r.LastName, r.Email, r.Phone,
         r.ProjectTypeSlugs, r.PropertyType, r.AddressLine, r.City, r.PostalCode,
         r.Timeline, r.BudgetRange, r.Description, r.PreferredContactMethod,
-        r.ReferralSource, r.Status, r.InternalNotes, r.CreatedAtUtc, r.UpdatedAtUtc);
+        r.ReferralSource, r.Status, r.InternalNotes, r.CreatedAtUtc, r.UpdatedAtUtc,
+        r.LandingPage, r.ReferrerUrl, r.UtmSource, r.UtmMedium, r.UtmCampaign, r.UtmTerm,
+        r.UtmContent, r.NotificationAttemptCount, r.NotificationAttemptedAtUtc,
+        r.NotificationDeliveredAtUtc, r.NotificationFailedAtUtc, r.NotificationFailureCategory);
 }

@@ -14,6 +14,12 @@ interface PageHeroProps {
   lead?: ReactNode;
   crumbs?: readonly Crumb[];
   image?: ImageAsset | null;
+  /** Optional class applied to the panel Photo wrapper. */
+  imageClassName?: string;
+  /** Optional panel content for pages that need something other than artwork. */
+  panelContent?: ReactNode;
+  /** Enables the shared Photo hover zoom for custom panel content that opts in. */
+  enablePanelZoom?: boolean;
   /** `panel` keeps the artwork beside the copy; `banner` runs it behind. */
   layout?: 'panel' | 'banner' | 'plain';
   actions?: ReactNode;
@@ -28,12 +34,15 @@ export function PageHero({
   lead,
   crumbs,
   image,
+  imageClassName,
+  panelContent,
+  enablePanelZoom = false,
   layout = 'panel',
   actions,
   meta,
   className,
 }: PageHeroProps) {
-  const showImage = layout !== 'plain' && image;
+  const showPanel = layout === 'panel' && (panelContent || image);
 
   return (
     <section
@@ -61,9 +70,11 @@ export function PageHero({
           {actions ? <div className={styles.actions}>{actions}</div> : null}
         </div>
 
-        {layout === 'panel' && showImage && image ? (
-          <div className={styles.panelMedia} data-photo-zoom>
-            <Photo image={image} ratio="landscape" sizes="(min-width: 68rem) 42vw, 92vw" priority zoomOnHover />
+        {showPanel ? (
+          <div className={styles.panelMedia} data-photo-zoom={panelContent && !enablePanelZoom ? undefined : true}>
+            {panelContent ?? (image ? (
+              <Photo image={image} ratio="landscape" className={imageClassName} sizes="(min-width: 68rem) 42vw, 92vw" priority zoomOnHover />
+            ) : null)}
             <span className={styles.panelTick} aria-hidden="true" />
           </div>
         ) : null}

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useSiteContent } from '@/lib/siteContentContext';
 import { SCHEMA_CONTEXT } from './structuredData';
+import { runtimeIndexingDisabled } from './runtimeIndexing';
 
 export interface SeoProps {
   /** Page title without the brand suffix — the suffix is added automatically. */
@@ -19,6 +20,8 @@ export interface SeoProps {
 }
 
 const SEO_ATTR = 'data-seo';
+const DEFAULT_SOCIAL_IMAGE = '/media/social/social-thumbnail-1.png';
+const DEFAULT_SOCIAL_ALT = 'Kellum’s Second Chance Renovations — exterior renovations in Cincinnati, Ohio.';
 
 function upsertMeta(selector: string, attrs: Record<string, string>) {
   let el = document.head.querySelector<HTMLMetaElement>(selector);
@@ -74,8 +77,8 @@ export function Seo({
   // A page may supply its own image (a project cover); otherwise the shared
   // social card, which may not exist yet.
   const imagePath = image ?? site.ogImagePath;
-  const imageUrl = imagePath === null ? null : `${site.siteUrl}${imagePath}`;
-  const alt = imageAlt ?? `${site.legalName} — renovation work`;
+  const imageUrl = imagePath === null ? null : new URL(imagePath, `${site.siteUrl}/`).toString();
+  const alt = imageAlt ?? (imagePath === DEFAULT_SOCIAL_IMAGE ? DEFAULT_SOCIAL_ALT : `${site.legalName} — renovation work`);
 
   useEffect(() => {
     document.title = fullTitle;
@@ -83,7 +86,9 @@ export function Seo({
     upsertMeta('meta[name="description"]', { name: 'description', content: description });
     upsertMeta('meta[name="robots"]', {
       name: 'robots',
-      content: noIndex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large',
+      content: noIndex || runtimeIndexingDisabled()
+        ? 'noindex, nofollow'
+        : 'index, follow, max-image-preview:large',
     });
     upsertLink('canonical', canonical);
 
@@ -105,6 +110,13 @@ export function Seo({
     if (imageUrl) {
       upsertMeta('meta[property="og:image"]', { property: 'og:image', content: imageUrl });
       upsertMeta('meta[property="og:image:alt"]', { property: 'og:image:alt', content: alt });
+      if (imagePath === DEFAULT_SOCIAL_IMAGE) {
+        upsertMeta('meta[property="og:image:width"]', { property: 'og:image:width', content: '1731' });
+        upsertMeta('meta[property="og:image:height"]', { property: 'og:image:height', content: '909' });
+      } else {
+        removeMeta('meta[property="og:image:width"]');
+        removeMeta('meta[property="og:image:height"]');
+      }
       upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' });
       upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: imageUrl });
       upsertMeta('meta[name="twitter:image:alt"]', { name: 'twitter:image:alt', content: alt });
@@ -112,10 +124,12 @@ export function Seo({
       upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary' });
       removeMeta('meta[property="og:image"]');
       removeMeta('meta[property="og:image:alt"]');
+      removeMeta('meta[property="og:image:width"]');
+      removeMeta('meta[property="og:image:height"]');
       removeMeta('meta[name="twitter:image"]');
       removeMeta('meta[name="twitter:image:alt"]');
     }
-  }, [fullTitle, description, canonical, imageUrl, alt, type, noIndex, site.legalName]);
+  }, [fullTitle, description, canonical, imagePath, imageUrl, alt, type, noIndex, site.legalName]);
 
   useEffect(() => {
     if (!structuredData || structuredData.length === 0) return;

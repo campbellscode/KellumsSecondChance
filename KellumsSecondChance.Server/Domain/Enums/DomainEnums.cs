@@ -76,3 +76,22 @@ public enum PreferredContactMethod
     Email = 2,
     Text = 3,
 }
+
+/// <summary>Lightweight triage state for a preliminary employment enquiry.</summary>
+public enum EmploymentInterestStatus
+{
+    New = 0,
+    Contacted = 1,
+    Interview = 2,
+    Closed = 3,
+    Archived = 4,
+}
+
+public enum BookingRequestStatus
+{
+    Pending = 0,
+    Confirmed = 1,
+    Declined = 2,
+    Completed = 3,
+    Cancelled = 4,
+}

@@ -52,7 +52,7 @@ public class SiteContentService(KellumsDbContext db, IOptions<BusinessOptions> o
          * including the PostalAddress node in structured data.
          */
         var publishAddress = string.Equals(
-            Value(SiteSettingsWriteService.Keys.PublishAddress),
+            Value(SiteSettingsWriteService.Keys.PublishAddress, _business.PublishAddress.ToString()),
             "true",
             StringComparison.OrdinalIgnoreCase);
 
@@ -74,9 +74,10 @@ public class SiteContentService(KellumsDbContext db, IOptions<BusinessOptions> o
             publishAddress
                 ? Value(SiteSettingsWriteService.Keys.AddressRegion, _business.AddressRegion)
                 : null,
-            publishAddress ? Value(SiteSettingsWriteService.Keys.AddressPostalCode) : null,
+            publishAddress ? Value(SiteSettingsWriteService.Keys.AddressPostalCode, _business.AddressPostalCode) : null,
             Value(SiteSettingsWriteService.Keys.SiteUrl),
-            Value(SiteSettingsWriteService.Keys.OgImagePath),
+            Value(SiteSettingsWriteService.Keys.OgImagePath, _business.OgImagePath),
+            Value(SiteSettingsWriteService.Keys.GoogleReviewUrl),
             ResolveSocialLinks(Value(SiteSettingsWriteService.Keys.SocialLinks)),
             /*
              * Hours the business actually gave us, or none.

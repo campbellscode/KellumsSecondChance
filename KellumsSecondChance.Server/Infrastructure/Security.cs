@@ -114,6 +114,7 @@ public class SecurityHeadersMiddleware(RequestDelegate next, IWebHostEnvironment
             "font-src 'self' https://fonts.gstatic.com data:",
             "img-src 'self' data: blob:",
             $"connect-src {connectSrc}",
+            "frame-src https://www.google.com",
             "frame-ancestors 'none'",
             "form-action 'self'",
             "base-uri 'self'",

@@ -167,6 +167,7 @@ export function Header() {
               </li>
             ))}
           </ul>
+          <p className={styles.drawerTagline}>{site.tagline}</p>
         </nav>
 
         <div className={styles.drawerFooter}>
@@ -182,7 +183,6 @@ export function Header() {
               Other ways to reach us
             </Button>
           )}
-          <p className={styles.drawerTagline}>{site.tagline}</p>
         </div>
       </div>
 

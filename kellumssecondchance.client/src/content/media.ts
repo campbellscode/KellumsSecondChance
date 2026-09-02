@@ -35,29 +35,39 @@ function wide(src: string, alt: string): ImageAsset {
 }
 
 export const heroMedia = {
-  before: wide(
-    '/media/hero/hero-before.svg',
-    'A dated kitchen with worn cabinets, dim lighting and a tired laminate counter.',
-  ),
-  after: wide(
-    '/media/hero/hero-after.svg',
-    'The same kitchen rebuilt: new cabinetry, stone counters, warm daylight and a finished island.',
-  ),
-  detail: portrait(
-    '/media/hero/hero-detail.svg',
-    'Close detail of newly installed wall panelling and painted trim.',
-  ),
+  before: {
+    src: '/media/projects/home-hero-before.jpg',
+    width: 1254,
+    height: 1254,
+    alt: 'A brick home’s front porch before renovation, with black metal railings and concrete steps.',
+  },
+  after: {
+    src: '/media/projects/home-hero-after.jpg',
+    width: 1254,
+    height: 1254,
+    alt: 'The same brick front porch after renovation, with new white railings and a refreshed entry.',
+  },
 } as const;
 
 export const editorialMedia = {
-  story: landscape(
-    '/media/editorial/story.svg',
-    'Freshly finished wall panelling and trim carpentry in a renovated hallway.',
-  ),
-  storyPortrait: portrait(
-    '/media/editorial/story-portrait.svg',
-    'A renovated living room with a rebuilt fireplace surround and new hardwood floors.',
-  ),
+  story: {
+    src: '/media/editorial/second-chance-2.jpg',
+    width: 206,
+    height: 206,
+    alt: 'A worker repairing the upper front-gable exterior of a house.',
+  },
+  storyPortrait: {
+    src: '/media/editorial/second-chance-1.jpg',
+    width: 206,
+    height: 206,
+    alt: 'A tall yellow historic house with ladders reaching its upper exterior.',
+  },
+  aboutSecondChance: {
+    src: '/media/editorial/about-second-chance.jpg',
+    width: 498,
+    height: 739,
+    alt: 'A person in a Kellum’s hoodie standing on a flat roof beneath a bright sky.',
+  },
   about: wide(
     '/media/editorial/about.svg',
     'A completed kitchen renovation with custom cabinetry and pendant lighting.',
@@ -74,14 +84,18 @@ export const editorialMedia = {
     '/media/editorial/cta.svg',
     'A renovated living space with large windows and refinished floors.',
   ),
-  reviews: landscape(
-    '/media/editorial/reviews.svg',
-    'A remodelled bathroom with a tiled walk-in shower and a floating vanity.',
-  ),
-  contact: landscape(
-    '/media/editorial/contact.svg',
-    'Newly installed hardwood flooring running toward a freshly painted wall.',
-  ),
+  reviews: {
+    src: '/media/editorial/reviews-1.png',
+    width: 1448,
+    height: 1086,
+    alt: 'A person looking at a finished front porch and brick home exterior.',
+  },
+  contact: {
+    src: '/media/editorial/contact-1.png',
+    width: 1448,
+    height: 1086,
+    alt: 'A Kellum’s representative greeting a homeowner at the front door.',
+  },
 } as const;
 
 /** Cover art per service slug. Falls back to null when a slug has no artwork. */

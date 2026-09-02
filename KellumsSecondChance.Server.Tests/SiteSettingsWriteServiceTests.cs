@@ -76,7 +76,25 @@ public class SiteSettingsWriteServiceTests : IDisposable
         Assert.Null(profile.FoundedYear);
         Assert.Null(profile.SiteUrl);
         Assert.Null(profile.OgImagePath);
+        Assert.Null(profile.GoogleReviewUrl);
         Assert.Empty(profile.SocialLinks);
+    }
+
+    [Fact]
+    public async Task Google_review_url_is_optional_and_https_only()
+    {
+        var insecure = Filled();
+        insecure.GoogleReviewUrl = "http://google.example/review";
+        Assert.False((await _settings.SaveAsync(insecure)).Ok);
+
+        var secure = Filled();
+        secure.GoogleReviewUrl = "https://g.page/r/example/review";
+        Assert.True((await _settings.SaveAsync(secure)).Ok);
+        Assert.Equal(secure.GoogleReviewUrl, (await _publicContent.GetAsync()).GoogleReviewUrl);
+
+        secure.GoogleReviewUrl = null;
+        Assert.True((await _settings.SaveAsync(secure)).Ok);
+        Assert.Null((await _publicContent.GetAsync()).GoogleReviewUrl);
     }
 
     [Fact]

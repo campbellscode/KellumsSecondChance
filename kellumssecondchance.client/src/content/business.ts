@@ -36,7 +36,7 @@
  *  ─────────────────────────────────────────────────────────────────────────
  *  STILL OUTSTANDING
  *  ─────────────────────────────────────────────────────────────────────────
- *  Everything below is null because nobody has confirmed it. Each is now set
+ *  Unconfirmed operational fields remain null. Each is ultimately set
  *  in the console rather than in code — the dashboard lists the blank ones as
  *  items needing attention, with a link straight to the field.
  *
@@ -110,13 +110,13 @@ export interface BusinessProfile {
   readonly phone: NeedsBusinessInput<PhoneConfig>;
   readonly email: NeedsBusinessInput<string>;
   readonly address: NeedsBusinessInput<PostalAddress>;
-  readonly serviceAreaSummary: string;
+  readonly serviceAreaSummary: NeedsBusinessInput<string>;
   readonly social: readonly SocialLink[];
   readonly licensing: NeedsBusinessInput<string>;
   readonly insurance: NeedsBusinessInput<string>;
   readonly foundedYear: NeedsBusinessInput<number>;
   /** Canonical production origin, no trailing slash. */
-  readonly siteUrl: string;
+  readonly siteUrl: NeedsBusinessInput<string>;
   readonly ogImagePath: NeedsBusinessInput<string>;
 }
 
@@ -134,18 +134,18 @@ export interface BusinessProfile {
  * change the pre-API fallback.
  */
 export const phoneCandidate: PhoneConfig = {
-  display: '(513) 620-0130',
+  display: '513-620-0130',
   e164: '+15136200130',
 };
 
 export const business: BusinessProfile = {
   legalName: "Kellum’s Second Chance Renovations",
   shortName: "Kellum’s",
-  tagline: 'Your home deserves a second chance.',
+  tagline: 'Second chances are what we build.',
   promise:
-    'We transform tired, outdated and damaged spaces into homes worth falling in love with again.',
+    'We give tired, weathered and damaged home exteriors a second chance.',
   elevatorPitch:
-    "Kellum’s Second Chance Renovations is a residential renovation and remodeling company. We take on the rooms people have given up on — the dated kitchen, the unfinished basement, the bathroom that has needed help for a decade — and we bring them back better than they started.",
+    "Kellum’s is an exterior renovation, repair and restoration company serving homeowners in Cincinnati, Ohio. We are built on a simple belief: what something is today does not have to determine what it becomes tomorrow.",
 
   primaryCta: { label: 'Request an Estimate', href: '/request-estimate' },
   secondaryCta: { label: 'See Our Transformations', href: '/projects' },
@@ -156,23 +156,27 @@ export const business: BusinessProfile = {
    * ---------------------------------------------------------------------- */
 
   // ❶ PHONE
-  phone: null,
+  phone: phoneCandidate,
 
   // ❷ EMAIL
-  email: null,
+  email: 'secondchancerenov@gmail.com',
 
   // ❸ ADDRESS — or none at all, which is normal for a mobile trade.
-  address: null,
+  address: {
+    streetAddress: null,
+    addressLocality: 'Cincinnati',
+    addressRegion: 'OH',
+    postalCode: '45236',
+    addressCountry: 'US',
+  },
 
   // ❹ SITE URL — the fallback origin used for canonical tags and sharing URLs
   //    until one is set in the console. A wrong value here misdirects SEO, so
   //    the console value should be set before launch.
-  siteUrl: 'https://www.kellumssecondchance.com',
+  siteUrl: 'https://kellumssecondchance.com',
 
-  // ❿ SOCIAL SHARING IMAGE — a 1200×630 PNG or JPG (never SVG; the platforms
-  //    do not render it). While null, og:image and twitter:image are omitted
-  //    entirely rather than pointing at a URL that 404s.
-  ogImagePath: null,
+  // ❿ SOCIAL SHARING IMAGE — approved deployed brand artwork.
+  ogImagePath: '/media/social/social-thumbnail-1.png',
 
   // ❺ / ❻ LICENSING AND INSURANCE — exact wording only.
   licensing: null,
@@ -187,8 +191,7 @@ export const business: BusinessProfile = {
   // ❾ SERVICE AREA — the cities, counties and postal codes live in the
   //    ServiceAreas table and are edited at /admin/service-areas. This is only
   //    the short prose summary, itself editable in Site settings.
-  serviceAreaSummary:
-    'Serving homeowners across our local service area. Not sure if you are in it? Ask — we will tell you straight.',
+  serviceAreaSummary: 'Serving homeowners in Cincinnati, Ohio.',
 } as const;
 
 /** True when the value came from configuration rather than being unset. */

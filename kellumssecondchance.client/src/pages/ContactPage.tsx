@@ -8,6 +8,7 @@ import { EstimateForm } from '@/components/forms/EstimateForm';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
+import { Photo } from '@/components/ui/Photo';
 import { business } from '@/content/business';
 import { useSiteContent } from '@/lib/siteContentContext';
 import { editorialMedia } from '@/content/media';
@@ -30,17 +31,27 @@ export default function ContactPage() {
     <>
       <Seo
         title="Contact"
-        description="Get in touch with Kellum’s Second Chance Renovations. Tell us about your project and a real person will get back to you."
+        description="Contact Kellum’s Second Chance Renovations about an exterior renovation, repair or restoration project in Cincinnati."
         path="/contact"
         structuredData={structuredData}
       />
 
       <PageHero
-        eyebrow="Let's talk about your space"
-        title="Tell us what you have been putting off."
-        lead="You do not need the right words for it. Describe the room and what bothers you, and we will take it from there."
+        eyebrow="Let's talk about your exterior"
+        title="Tell us what your home needs."
+        lead="Describe the exterior work you have in mind and share any details that may help us understand the project."
         crumbs={CRUMBS}
-        image={editorialMedia.contact}
+        panelContent={(
+          <Photo
+            image={editorialMedia.contact}
+            ratio="auto"
+            className={styles.contactPhoto}
+            sizes="(min-width: 68rem) 42vw, 92vw"
+            priority
+            zoomOnHover
+          />
+        )}
+        enablePanelZoom
         layout="panel"
       />
 

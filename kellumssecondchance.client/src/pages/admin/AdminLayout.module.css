@@ -230,14 +230,39 @@
 }
 
 @media (min-width: 64rem) {
+  .shell {
+    /* 100vh is the fallback; dynamic viewport height follows browser chrome. */
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
   .menuButton { display: none; }
-  .body { grid-template-columns: 15rem minmax(0, 1fr); }
+  .body {
+    grid-template-columns: 15rem minmax(0, 1fr);
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
   .sidebar {
     display: flex;
     flex-direction: column;
+    min-height: 0;
     padding: 1rem 0.75rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: var(--ink-600) var(--ink-900);
     background-color: var(--ink-900);
     border-inline-end: 1px solid var(--color-border);
+  }
+  .main {
+    min-width: 0;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: var(--ink-600) var(--ink-950);
   }
   /* The drawer is a small-screen affordance only. */
   .drawerOpen, .scrim { display: none; }

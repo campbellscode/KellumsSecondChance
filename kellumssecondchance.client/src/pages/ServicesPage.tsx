@@ -42,15 +42,15 @@ export default function ServicesPage() {
     <>
       <Seo
         title="Renovation & Remodeling Services"
-        description="Kitchens, bathrooms, basements, flooring, carpentry, decks, repairs and rental turnovers — residential renovation done properly, start to finish."
+        description="Roofing, siding, gutters, decks, exterior repairs and restoration services for homeowners in Cincinnati, Ohio."
         path="/services"
         structuredData={structuredData}
       />
 
       <PageHero
         eyebrow="What we take on"
-        title="Rooms we bring back."
-        lead="Some of this is a whole-room rebuild. Some of it is fixing what somebody else got wrong. If it involves reshaping a space in a house, it is worth a conversation."
+        title="Home exteriors we bring back."
+        lead="Some of this renews the whole exterior. Some of it fixes what somebody else got wrong. If it involves protecting or restoring the outside of your home, it is worth a conversation."
         crumbs={CRUMBS}
         image={editorialMedia.about}
         layout="banner"
@@ -65,7 +65,7 @@ export default function ServicesPage() {
         <Container width="wide">
           <div className={styles.overviewGrid}>
             <h2 id="overview-heading" className={styles.overviewTitle} data-reveal>
-              One crew, one point of contact, the whole room finished.
+              One crew, one point of contact, the whole exterior finished.
             </h2>
             <div className={styles.overviewBody}>
               <p>

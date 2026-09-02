@@ -47,6 +47,18 @@ public class EstimateRequest
     public PreferredContactMethod PreferredContactMethod { get; set; }
 
     public string? ReferralSource { get; set; }
+    public string? LandingPage { get; set; }
+    public string? ReferrerUrl { get; set; }
+    public string? UtmSource { get; set; }
+    public string? UtmMedium { get; set; }
+    public string? UtmCampaign { get; set; }
+    public string? UtmTerm { get; set; }
+    public string? UtmContent { get; set; }
+    public int NotificationAttemptCount { get; set; }
+    public DateTime? NotificationAttemptedAtUtc { get; set; }
+    public DateTime? NotificationDeliveredAtUtc { get; set; }
+    public DateTime? NotificationFailedAtUtc { get; set; }
+    public string? NotificationFailureCategory { get; set; }
 
     public EstimateRequestStatus Status { get; set; } = EstimateRequestStatus.New;
 

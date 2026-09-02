@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,8 @@ builder.Services
     .Bind(builder.Configuration.GetSection(BusinessOptions.SectionName))
     .ValidateDataAnnotations()
     .ValidateOnStart();
+
+builder.Services.AddOptions<ProductionOptions>().Bind(builder.Configuration.GetSection(ProductionOptions.SectionName)).Validate(o => builder.Environment.IsDevelopment() || Uri.TryCreate(o.SiteUrl, UriKind.Absolute, out var u) && u.Scheme == Uri.UriSchemeHttps, "Production:SiteUrl must be an absolute HTTPS URL in production.").Validate(o => builder.Environment.IsDevelopment() || !string.IsNullOrWhiteSpace(o.DataProtectionKeyPath), "Production:DataProtectionKeyPath is required in production.").ValidateOnStart();
 
 builder.Services
     .AddOptions<AntiSpamOptions>()
@@ -46,7 +49,12 @@ builder.Services
     .AddOptions<NotificationOptions>()
     .Bind(builder.Configuration.GetSection(NotificationOptions.SectionName))
     .ValidateDataAnnotations()
-    .ValidateOnStart();
+    .Validate(o => !o.Enabled || o.Provider.Equals("Smtp", StringComparison.OrdinalIgnoreCase)
+        && !string.IsNullOrWhiteSpace(o.SmtpHost)
+        && !string.IsNullOrWhiteSpace(o.FromAddress)
+        && o.EstimateRequestRecipients.Count > 0
+        && o.EmploymentInterestRecipients.Count > 0,
+        "Enabled notifications require Provider=Smtp, SmtpHost, FromAddress and both recipient lists.").ValidateOnStart();
 
 /* --------------------------------------------------------------- database */
 
@@ -54,21 +62,9 @@ var connectionString = builder.Configuration.GetConnectionString("KellumsDatabas
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
-    /*
-     * No connection string is a deployment mistake, but it must not stop the
-     * host from starting: the SPA and its static assets still serve, and the
-     * client falls back to its bundled content. The API surfaces a clear error
-     * instead of the site going dark.
-     */
-    if (!builder.Environment.IsDevelopment())
-    {
-        throw new InvalidOperationException(
-            "ConnectionStrings:KellumsDatabase is not configured. Set it via environment variable "
-            + "(ConnectionStrings__KellumsDatabase) or a secret store before starting in this environment.");
-    }
-
-    connectionString =
-        "Server=(localdb)\\mssqllocaldb;Database=KellumsSecondChance;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
+    throw new InvalidOperationException(
+        "ConnectionStrings:KellumsDatabase is not configured. Use User Secrets for Development "
+        + "or ConnectionStrings__KellumsDatabase/IIS configuration for deployed environments.");
 }
 
 builder.Services.AddDbContext<KellumsDbContext>(options =>
@@ -87,6 +83,10 @@ builder.Services.AddDbContext<KellumsDbContext>(options =>
         // homeowners' names, emails and addresses.
     }
 });
+
+var productionOptions = builder.Configuration.GetSection(ProductionOptions.SectionName).Get<ProductionOptions>() ?? new();
+var dataProtection = builder.Services.AddDataProtection().SetApplicationName(productionOptions.DataProtectionApplicationName);
+if (!string.IsNullOrWhiteSpace(productionOptions.DataProtectionKeyPath)) dataProtection.PersistKeysToFileSystem(new DirectoryInfo(productionOptions.DataProtectionKeyPath));
 
 /* --------------------------------------------------------------- identity */
 
@@ -218,6 +218,7 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddScoped<IContentService, ContentService>();
 builder.Services.AddScoped<ISiteContentService, SiteContentService>();
+builder.Services.AddScoped<ISpaMetadataService, SpaMetadataService>();
 
 /*
  * EstimateRequestService implements the public submission contract and the
@@ -236,6 +237,8 @@ builder.Services.AddScoped<ISiteSettingsWriteService, SiteSettingsWriteService>(
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 builder.Services.AddScoped<IAdminMediaService, AdminMediaService>();
 builder.Services.AddScoped<IMediaStorage, LocalMediaStorage>();
+builder.Services.AddScoped<IMediaIntegrityService, MediaIntegrityService>();
+builder.Services.AddScoped<IGalleryService, GalleryService>();
 
 /*
  * Content version: a process-wide value bumped by every admin content write and
@@ -252,8 +255,10 @@ builder.Services.AddSingleton<IContentVersion, ContentVersion>();
  * INotificationSender is the whole job of adding real email later; nothing else
  * changes. See Services/NotificationService.cs.
  */
-builder.Services.AddScoped<INotificationSender, LoggingNotificationSender>();
+builder.Services.AddScoped<INotificationSender>(sp => sp.GetRequiredService<IOptions<NotificationOptions>>().Value is { Enabled: true, Provider: var p } && p.Equals("Smtp", StringComparison.OrdinalIgnoreCase) ? ActivatorUtilities.CreateInstance<SmtpNotificationSender>(sp) : ActivatorUtilities.CreateInstance<LoggingNotificationSender>(sp));
 builder.Services.AddScoped<IEstimateRequestNotifier, EstimateRequestNotifier>();
+builder.Services.AddScoped<IEmploymentInterestNotifier, EmploymentInterestNotifier>();
+builder.Services.AddScoped<IBookingRequestNotifier, BookingRequestNotifier>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -303,6 +308,7 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(optio
 });
 
 builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
 
 builder.Services.AddResponseCompression(options =>
 {
@@ -393,6 +399,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = check => check.Tags.Contains("ready"), ResponseWriter = async (context, report) => { context.Response.ContentType = "application/json"; await context.Response.WriteAsJsonAsync(new { status = report.Status.ToString() }); } });
 
 /*
  * Client-side routes fall through to the SPA shell. API paths must not: an
@@ -401,12 +409,12 @@ app.MapControllers();
  */
 var mediaRequestPath = "/" + mediaOptions.PublicPathPrefix.Trim('/');
 
-app.MapFallback(context =>
+app.MapFallback(async context =>
 {
     if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
     {
         context.Response.StatusCode = StatusCodes.Status404NotFound;
-        return Task.CompletedTask;
+        return;
     }
 
     /*
@@ -417,13 +425,28 @@ app.MapFallback(context =>
     if (context.Request.Path.StartsWithSegments(mediaRequestPath, StringComparison.OrdinalIgnoreCase))
     {
         context.Response.StatusCode = StatusCodes.Status404NotFound;
-        return Task.CompletedTask;
+        return;
     }
 
+    var rendered = await context.RequestServices.GetRequiredService<ISpaMetadataService>()
+        .RenderAsync(
+            context.Request.Path,
+            $"{context.Request.Scheme}://{context.Request.Host}",
+            context.RequestAborted);
+    if (!rendered.Found)
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        return;
+    }
+    if (app.Environment.IsDevelopment())
+    {
+        // Crawlers may fetch Development pages (including social previews), but
+        // search engines must not add this non-production host to their index.
+        context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
+    }
     context.Response.StatusCode = StatusCodes.Status200OK;
     context.Response.ContentType = "text/html";
-    return context.Response.SendFileAsync(
-        Path.Combine(app.Environment.WebRootPath ?? "wwwroot", "index.html"));
+    await context.Response.WriteAsync(rendered.Html, context.RequestAborted);
 });
 
 app.Run();

@@ -74,6 +74,7 @@ export default function ReviewsPage() {
         lead="A contractor's own description of themselves is worth very little. This is the part that actually counts."
         crumbs={CRUMBS}
         image={editorialMedia.reviews}
+        imageClassName={styles.reviewsPhoto}
         layout="panel"
         meta={
           showAggregate ? (
@@ -201,12 +202,17 @@ export default function ReviewsPage() {
                 : 'Reviews here are collected directly from homeowners we have worked with. We do not scrape them from anywhere, we do not write them, and we do not remove the ones that are less than glowing. If we ever add reviews from Google or another platform, they will be labelled with their source.'}
             </p>
           </aside>
+          {site.googleReviewUrl ? (
+            <p className={styles.emptyActions}>
+              <a href={site.googleReviewUrl} target="_blank" rel="noopener noreferrer">Review us on Google</a>
+            </p>
+          ) : null}
         </Container>
       </section>
 
       <CtaSection
         eyebrow="Your project next"
-        title="Ready to give a room its second chance?"
+        title="Ready to give your house its second chance?"
       />
     </>
   );

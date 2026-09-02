@@ -102,8 +102,8 @@
 .navLink {
   position: relative;
   display: inline-block;
-  padding: 0.55rem 0.6rem;
-  font-size: var(--text-base);
+  padding: 0.55rem 0.42rem;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--color-muted);
   border-radius: var(--radius-xs);
@@ -183,23 +183,29 @@
   position: fixed;
   inset-block-start: var(--header-h);
   inset-inline: 0;
-  inset-block-end: 0;
+  block-size: calc(100dvh - var(--header-h));
   z-index: var(--z-drawer);
   display: none;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: var(--space-xl);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: clamp(0.75rem, 3vh, var(--space-xl));
   padding: clamp(1.25rem, 5vw, 2.5rem) var(--gutter) calc(var(--gutter) + env(safe-area-inset-bottom));
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  overflow: hidden;
   background-color: var(--bone-0);
 }
 
-.drawerOpen { display: flex; }
+.drawerOpen { display: grid; }
 
-.scrolled .drawer { inset-block-start: var(--header-h-scrolled); }
+.scrolled .drawer {
+  inset-block-start: var(--header-h-scrolled);
+  block-size: calc(100dvh - var(--header-h-scrolled));
+}
 
-.drawerNav { min-height: 0; }
+.drawerNav {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
 
 .drawerList {
   list-style: none;
@@ -267,7 +273,7 @@
 }
 
 .drawerTagline {
-  margin-block-start: 0.35rem;
+  margin-block: 1.25rem 0.25rem;
   text-align: center;
   font-family: var(--font-display);
   font-style: italic;
@@ -285,6 +291,15 @@
   cursor: default;
 }
 
+@media (max-height: 44rem) {
+  .drawer {
+    gap: 0.75rem;
+    padding-block-start: 0.75rem;
+  }
+  .drawerLink { padding-block: 0.75rem; }
+  .drawerFooter { gap: 0.5rem; }
+}
+
 /* ---- Breakpoints ------------------------------------------------------- */
 @media (min-width: 30rem) {
   .cta { display: inline-flex; }
@@ -294,7 +309,7 @@
   .phone { display: inline-flex; }
 }
 
-@media (min-width: 76rem) {
+@media (min-width: 90rem) {
   .nav { display: block; }
   .brand { margin-inline-end: 0; }
   .nav { margin-inline: auto; }

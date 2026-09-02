@@ -1,0 +1,1 @@
+import{r as e}from"./cn-CpBeUGFU.js";import{dt as t}from"./icons-CiBc3f-g.js";import{r as n}from"./adminFeedback-C5aAtBgy.js";var r=e(t(),1);function i(e,t){let{setDirty:i,confirmDiscard:a}=n();return(0,r.useEffect)(()=>(i(e),()=>i(!1)),[e,i]),{requestClose:()=>a(t)}}export{i as t};

@@ -343,7 +343,15 @@ function TestimonialForm({
     try {
       if (testimonial) await updateTestimonial(testimonial.id, payload);
       else await createTestimonial(payload);
-      toast.success(testimonial ? 'Review saved.' : 'Review added.');
+      toast.success(
+        draft.isActive
+          ? testimonial
+            ? 'Review saved and visible on the website.'
+            : 'Review added and visible on the website.'
+          : testimonial
+            ? 'Review saved as hidden from the website.'
+            : 'Review added as hidden from the website.',
+      );
       onSaved();
     } catch (caught) {
       const formErrors = toFormErrors(caught);
@@ -486,6 +494,7 @@ function TestimonialForm({
 
       <Switch
         label="Show this review on the website"
+        description="New reviews start hidden. Turn this on before saving to publish the review on the public Reviews page."
         checked={draft.isActive}
         onChange={(checked) => set('isActive', checked)}
       />

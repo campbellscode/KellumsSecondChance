@@ -4,11 +4,21 @@ import { deriveSiteContent } from '@/lib/siteContentContext';
 import { sampleSiteContent } from '@/content/sampleContent/siteContent';
 import type { FaqItem, ProjectDetail, Testimonial } from '@/lib/api/types';
 
-/**
- * The build-time profile: every operational fact is still null, which is
- * exactly the state the site ships in until somebody fills them in.
- */
-const blankSite = deriveSiteContent(sampleSiteContent).site;
+/** The build-time profile contains only facts confirmed by the business. */
+const confirmedSite = deriveSiteContent(sampleSiteContent).site;
+
+const blankSite = deriveSiteContent({
+  ...sampleSiteContent,
+  phoneDisplay: null,
+  phoneE164: null,
+  email: null,
+  addressLine1: null,
+  addressLine2: null,
+  addressLocality: null,
+  addressRegion: null,
+  addressPostalCode: null,
+  ogImagePath: null,
+}).site;
 
 /** The same profile with real values, as the admin console would supply them. */
 const suppliedSite = deriveSiteContent({
@@ -45,6 +55,20 @@ function testimonial(overrides: Partial<Testimonial> = {}): Testimonial {
 }
 
 describe('organizationSchema', () => {
+  it('publishes the confirmed contact and locality defaults', () => {
+    const schema = organizationSchema(confirmedSite) as Record<string, unknown>;
+
+    expect(schema.telephone).toBe('+15136200130');
+    expect(schema.email).toBe('secondchancerenov@gmail.com');
+    expect(schema.address).toEqual({
+      '@type': 'PostalAddress',
+      addressLocality: 'Cincinnati',
+      addressRegion: 'OH',
+      postalCode: '45236',
+      addressCountry: 'US',
+    });
+  });
+
   it('omits contact details the business has not supplied', () => {
     const schema = organizationSchema(blankSite) as Record<string, unknown>;
 

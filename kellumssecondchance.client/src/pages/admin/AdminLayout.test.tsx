@@ -136,6 +136,7 @@ describe('navigation', () => {
       ['Dashboard', '/admin'],
       ['Estimate requests', '/admin/estimate-requests'],
       ['Projects', '/admin/projects'],
+      ['Gallery', '/admin/gallery'],
       ['Services', '/admin/services'],
       ['Reviews', '/admin/testimonials'],
       ['Questions', '/admin/faqs'],
@@ -163,6 +164,14 @@ describe('navigation', () => {
     for (const link of links) {
       expect(link.textContent?.trim()).not.toBe('');
     }
+  });
+
+  it('provides distinct shared sidebar and main-content regions', async () => {
+    renderShell();
+    await screen.findByText('The console');
+
+    expect(document.querySelector('nav[aria-label="Admin sections"]')).toBeInTheDocument();
+    expect(document.querySelector('main#admin-main')).toBeInTheDocument();
   });
 
   it('keeps View site and Sign out named at every width', async () => {

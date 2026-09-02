@@ -36,6 +36,9 @@ public readonly record struct MediaScope
     /// <summary>Brand-level artwork: the social sharing card.</summary>
     public static MediaScope Brand() => new("brand");
 
+    /// <summary>Standalone photographs managed by the Gallery CMS.</summary>
+    public static MediaScope Gallery() => new("gallery");
+
     public override string ToString() => Folder;
 }
 

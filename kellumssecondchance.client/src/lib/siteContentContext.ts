@@ -39,6 +39,7 @@ export interface SiteProfile {
   readonly addressPostalCode: string | null;
   readonly foundedYear: number | null;
   readonly ogImagePath: string | null;
+  readonly googleReviewUrl: string | null;
   readonly socialHrefs: readonly string[];
 }
 
@@ -82,7 +83,7 @@ export function deriveSiteContent(content: SiteContent): SiteContentValue {
     lines.length > 0 ? { lines, oneLine: lines.join(', ') } : null;
 
   const site: SiteProfile = {
-    siteUrl: trimTrailingSlash(content.siteUrl ?? business.siteUrl),
+    siteUrl: trimTrailingSlash(content.siteUrl ?? window.location.origin),
     legalName: content.businessName || business.legalName,
     shortName: business.shortName,
     tagline: content.tagline || business.tagline,
@@ -96,6 +97,7 @@ export function deriveSiteContent(content: SiteContent): SiteContentValue {
     addressPostalCode: content.addressPostalCode,
     foundedYear: content.foundedYear,
     ogImagePath: content.ogImagePath,
+    googleReviewUrl: content.googleReviewUrl,
     socialHrefs: content.socialLinks.map((link) => link.href),
   };
 

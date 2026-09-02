@@ -24,8 +24,8 @@ export function WhyKellums({ eyebrowIndex }: WhyKellumsProps = {}) {
           eyebrow="Why Kellum’s"
           eyebrowIndex={eyebrowIndex}
           id="why-heading"
-          title="You are letting people into your house. That should mean something."
-          lead="Craftsmanship is table stakes. What actually decides whether a renovation is a good experience is everything around it."
+          title="Craftsmanship with purpose. Standards without exceptions."
+          lead="We believe in potential, and we believe opportunity and responsibility belong together. Respect, accountability and pride apply to everyone who represents Kellum’s."
           size="lg"
         />
 

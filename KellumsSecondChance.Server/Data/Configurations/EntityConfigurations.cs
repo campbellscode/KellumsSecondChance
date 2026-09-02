@@ -210,6 +210,10 @@ public class EstimateRequestConfiguration : IEntityTypeConfiguration<EstimateReq
         builder.Property(x => x.PostalCode).HasMaxLength(12).IsRequired();
         builder.Property(x => x.Description).HasMaxLength(4000).IsRequired();
         builder.Property(x => x.ReferralSource).HasMaxLength(60);
+        builder.Property(x => x.LandingPage).HasMaxLength(500); builder.Property(x => x.ReferrerUrl).HasMaxLength(1000);
+        builder.Property(x => x.UtmSource).HasMaxLength(120); builder.Property(x => x.UtmMedium).HasMaxLength(120);
+        builder.Property(x => x.UtmCampaign).HasMaxLength(200); builder.Property(x => x.UtmTerm).HasMaxLength(200); builder.Property(x => x.UtmContent).HasMaxLength(200);
+        builder.Property(x => x.NotificationFailureCategory).HasMaxLength(30);
         builder.Property(x => x.InternalNotes).HasMaxLength(4000);
         builder.Property(x => x.SubmitterIpHash).HasMaxLength(64);
         builder.Property(x => x.UserAgent).HasMaxLength(300);
@@ -274,5 +278,70 @@ public class EstimateRequestStatusHistoryConfiguration
         builder.Property(x => x.ChangedByDisplayName).HasMaxLength(256);
 
         builder.HasIndex(x => new { x.EstimateRequestId, x.ChangedAtUtc });
+    }
+}
+
+public class GalleryImageConfiguration : IEntityTypeConfiguration<GalleryImage>
+{
+    public void Configure(EntityTypeBuilder<GalleryImage> builder)
+    {
+        builder.ToTable("GalleryImages");
+        builder.Property(x => x.ImagePath).HasMaxLength(300).IsRequired();
+        builder.Property(x => x.OriginalFileName).HasMaxLength(260).IsRequired();
+        builder.Property(x => x.AltText).HasMaxLength(300).IsRequired();
+        builder.Property(x => x.Caption).HasMaxLength(500);
+        builder.Property(x => x.StorageKey).HasMaxLength(400);
+        builder.Property(x => x.ContentType).HasMaxLength(100);
+        builder.HasIndex(x => new { x.IsActive, x.DisplayOrder, x.CreatedAtUtc });
+        builder.HasIndex(x => x.StorageKey);
+    }
+}
+
+public class EmploymentInterestConfiguration : IEntityTypeConfiguration<EmploymentInterest>
+{
+    public void Configure(EntityTypeBuilder<EmploymentInterest> builder)
+    {
+        builder.ToTable("EmploymentInterests");
+        builder.Property(x => x.FirstName).HasMaxLength(80).IsRequired();
+        builder.Property(x => x.LastName).HasMaxLength(80).IsRequired();
+        builder.Property(x => x.Email).HasMaxLength(254).IsRequired();
+        builder.Property(x => x.Phone).HasMaxLength(30);
+        builder.Property(x => x.PreferredContactMethod).HasConversion<string>().HasMaxLength(30).IsRequired();
+        builder.Property(x => x.GeneralWorkExperience).HasMaxLength(2000);
+        builder.Property(x => x.AreasOfExperience).HasMaxLength(2000);
+        builder.Property(x => x.WorkInterest).HasMaxLength(300).IsRequired();
+        builder.Property(x => x.Availability).HasMaxLength(300);
+        builder.Property(x => x.Message).HasMaxLength(3000);
+        builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
+        builder.Property(x => x.InternalNotes).HasMaxLength(4000);
+        builder.Property(x => x.NotificationFailureCategory).HasMaxLength(30);
+        builder.Property(x => x.SubmitterIpHash).HasMaxLength(64);
+        builder.Property(x => x.RowVersion).IsRowVersion();
+        builder.HasIndex(x => new { x.Status, x.CreatedAtUtc });
+        builder.HasIndex(x => new { x.SubmitterIpHash, x.CreatedAtUtc });
+    }
+}
+
+public class BookingRequestConfiguration : IEntityTypeConfiguration<BookingRequest>
+{
+    public void Configure(EntityTypeBuilder<BookingRequest> builder)
+    {
+        builder.ToTable("BookingRequests");
+        builder.Property(x => x.FirstName).HasMaxLength(80).IsRequired();
+        builder.Property(x => x.LastName).HasMaxLength(80).IsRequired();
+        builder.Property(x => x.Email).HasMaxLength(254).IsRequired();
+        builder.Property(x => x.Phone).HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Address).HasMaxLength(200).IsRequired();
+        builder.Property(x => x.City).HasMaxLength(100).IsRequired();
+        builder.Property(x => x.State).HasMaxLength(2).IsRequired();
+        builder.Property(x => x.PostalCode).HasMaxLength(12).IsRequired();
+        builder.Property(x => x.ProjectDescription).HasMaxLength(3000).IsRequired();
+        builder.Property(x => x.Notes).HasMaxLength(2000);
+        builder.Property(x => x.AdminNotes).HasMaxLength(4000);
+        builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
+        builder.Property(x => x.SubmitterIpHash).HasMaxLength(64);
+        builder.Property(x => x.RowVersion).IsRowVersion();
+        builder.HasIndex(x => new { x.Status, x.CreatedAtUtc });
+        builder.HasIndex(x => new { x.SubmitterIpHash, x.CreatedAtUtc });
     }
 }

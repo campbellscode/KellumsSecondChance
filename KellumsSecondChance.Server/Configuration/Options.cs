@@ -41,6 +41,14 @@ public class BusinessOptions
 
     public string? AddressRegion { get; set; }
 
+    public string? AddressPostalCode { get; set; }
+
+    /// <summary>Allows a confirmed locality-only address to be published without a street address.</summary>
+    public bool PublishAddress { get; set; }
+
+    /// <summary>Root-relative fallback social-sharing image.</summary>
+    public string? OgImagePath { get; set; }
+
     public List<SocialLinkOptions> SocialLinks { get; set; } = [];
 }
 
@@ -154,4 +162,25 @@ public class NotificationOptions
     /// e.g. "https://www.example.com". Falls back to the request's own origin.
     /// </summary>
     public string? AdminBaseUrl { get; set; }
+    public bool Enabled { get; set; }
+    public string Provider { get; set; } = "Logging";
+    public string? SmtpHost { get; set; }
+    [Range(1, 65535)] public int SmtpPort { get; set; } = 587;
+    public bool SmtpUseTls { get; set; } = true;
+    public string? SmtpUsername { get; set; }
+    public string? SmtpPassword { get; set; }
+    [EmailAddress] public string? FromAddress { get; set; }
+    public string FromDisplayName { get; set; } = "Kellum's Website";
+    public List<string> EmploymentInterestRecipients { get; set; } = [];
+    [Range(1, 120)] public int TimeoutSeconds { get; set; } = 20;
+}
+
+public class ProductionOptions
+{
+    public const string SectionName = "Production";
+    [Url] public string? SiteUrl { get; set; }
+    public string? DataProtectionKeyPath { get; set; }
+    public string DataProtectionApplicationName { get; set; } = "KellumsSecondChance";
+    public string? GoogleSiteVerification { get; set; }
+    public string? BingSiteVerification { get; set; }
 }

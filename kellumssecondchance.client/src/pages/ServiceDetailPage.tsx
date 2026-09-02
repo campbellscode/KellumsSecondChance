@@ -156,7 +156,7 @@ export default function ServiceDetailPage() {
               <div className={styles.panel}>
                 <h3 className={styles.panelTitle}>Start here</h3>
                 <p className={styles.panelText}>
-                  Send us the room and what is bothering you about it. Four short steps, and a real
+                  Send us your house and what is bothering you about its exterior. Four short steps, and a real
                   person reads it.
                 </p>
                 <Button as="link" to="/request-estimate" fullWidth>

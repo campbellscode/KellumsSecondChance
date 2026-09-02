@@ -25,6 +25,7 @@ import type {
 } from './types';
 import type {
   AdminEstimateRequestDetail,
+  AdminGalleryImage,
   AdminFaq,
   AdminProject,
   AdminProjectImage,
@@ -47,6 +48,27 @@ import type {
   SiteSettingsWrite,
   TestimonialWrite,
 } from './adminTypes';
+
+export function getAdminGallery(signal?: AbortSignal): Promise<readonly AdminGalleryImage[]> {
+  return apiRequest<AdminGalleryImage[]>('/api/admin/gallery', { signal });
+}
+
+export function uploadGalleryImage(file: File, altText = 'Exterior renovation gallery photograph.', signal?: AbortSignal): Promise<AdminGalleryImage> {
+  const form = new FormData(); form.append('file', file); form.append('altText', altText);
+  return upload<AdminGalleryImage>('/api/admin/gallery/upload', form, signal);
+}
+
+export function updateGalleryImage(id: number, body: { altText: string; caption: string | null; isActive: boolean }): Promise<AdminGalleryImage> {
+  return mutate<AdminGalleryImage>(`/api/admin/gallery/${id}`, { method: 'PUT', body });
+}
+
+export function reorderGalleryImages(orderedIds: readonly number[]): Promise<void> {
+  return mutate<void>('/api/admin/gallery/reorder', { method: 'POST', body: { orderedIds } });
+}
+
+export function deleteGalleryImage(id: number): Promise<void> {
+  return mutate<void>(`/api/admin/gallery/${id}`, { method: 'DELETE' });
+}
 
 /* ------------------------------------------------------------ antiforgery */
 
@@ -198,6 +220,14 @@ export function getEstimateRequest(
   signal?: AbortSignal,
 ): Promise<AdminEstimateRequestDetail> {
   return apiRequest<AdminEstimateRequestDetail>(`/api/admin/estimate-requests/${id}`, { signal });
+}
+
+export function retryEstimateRequestNotification(id: number): Promise<void> {
+  return mutate<void>(`/api/admin/estimate-requests/${id}/notification/retry`, { method: 'POST' });
+}
+
+export function retryEmploymentInterestNotification(id: number): Promise<void> {
+  return mutate<void>(`/api/admin/employment-interests/${id}/notification/retry`, { method: 'POST' });
 }
 
 export function changeEstimateRequestStatus(

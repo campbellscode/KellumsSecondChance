@@ -29,9 +29,11 @@ import {
   changeEstimateRequestStatus,
   deleteEstimateRequestNote,
   getEstimateRequest,
+  retryEstimateRequestNotification,
 } from '@/lib/api/admin';
 import { ApiError } from '@/lib/api/client';
 import type { EstimateRequestStatus } from '@/lib/api/types';
+import type { AdminEstimateRequestDetail } from '@/lib/api/adminTypes';
 
 /**
  * One lead, in full.
@@ -61,6 +63,19 @@ export default function AdminEstimateRequestDetailPage() {
   const [statusError, setStatusError] = useState<string | null>(null);
   const [noteToDelete, setNoteToDelete] = useState<number | null>(null);
   const [confirmArchive, setConfirmArchive] = useState(false);
+
+  const retryNotification = async () => {
+    setBusy(true);
+    try {
+      await retryEstimateRequestNotification(request.id);
+      toast.success('Notification retry finished.');
+      reload();
+    } catch (caught) {
+      toast.error(caught instanceof Error ? caught.message : 'The notification could not be retried.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   /*
    * A half-typed note counts as unsaved work. Somebody records "called, wants
@@ -242,6 +257,20 @@ export default function AdminEstimateRequestDetailPage() {
             </dl>
           </Panel>
 
+          {hasAttribution(request) ? (
+            <Panel title="Attribution" description="First-touch acquisition details captured for this enquiry.">
+              <dl className={styles.facts}>
+                {request.utmSource ? <Fact label="Source" value={request.utmSource} /> : null}
+                {request.utmMedium ? <Fact label="Medium" value={request.utmMedium} /> : null}
+                {request.utmCampaign ? <Fact label="Campaign" value={request.utmCampaign} /> : null}
+                {request.utmTerm ? <Fact label="Term" value={request.utmTerm} /> : null}
+                {request.utmContent ? <Fact label="Content" value={request.utmContent} /> : null}
+                {request.landingPage ? <Fact label="Landing page" value={<SafeUrl value={request.landingPage} />} /> : null}
+                {request.referrerUrl ? <Fact label="Referrer" value={<SafeUrl value={request.referrerUrl} />} /> : null}
+              </dl>
+            </Panel>
+          ) : null}
+
           {/* ---- Notes --------------------------------------------------- */}
           <Panel
             title="Notes"
@@ -312,6 +341,14 @@ export default function AdminEstimateRequestDetailPage() {
 
         {/* ---- Side column ----------------------------------------------- */}
         <div className={styles.sideColumn}>
+          <Panel title="Notification">
+            <NotificationState request={request} />
+            {request.notificationDeliveredAtUtc === null ? (
+              <SecondaryButton className={styles.fullWidth} onClick={() => void retryNotification()} disabled={busy}>
+                {busy ? 'Retrying…' : 'Retry notification'}
+              </SecondaryButton>
+            ) : null}
+          </Panel>
           <Panel title="Stage">
             <div className={styles.statusNow}>
               <Pill tone={meta.tone}>{meta.label}</Pill>
@@ -462,6 +499,33 @@ export default function AdminEstimateRequestDetailPage() {
       />
     </>
   );
+}
+
+type Request = AdminEstimateRequestDetail['request'];
+
+function hasAttribution(request: Request) {
+  return Boolean(request.utmSource || request.utmMedium || request.utmCampaign || request.utmTerm || request.utmContent || request.landingPage || request.referrerUrl);
+}
+
+function SafeUrl({ value }: { value: string }) {
+  let href: string | null = null;
+  try {
+    const url = new URL(value, window.location.origin);
+    if (url.protocol === 'http:' || url.protocol === 'https:') href = url.href;
+  } catch { /* Invalid or relative text is intentionally not linked. */ }
+  return href ? <a href={href} target="_blank" rel="noreferrer">{value}</a> : <>{value}</>;
+}
+
+function NotificationState({ request }: { request: Request }) {
+  const label = request.notificationDeliveredAtUtc ? 'Delivered' : request.notificationFailedAtUtc ? 'Failed' : 'Not yet sent';
+  return <dl className={styles.facts}>
+    <Fact label="State" value={label} />
+    <Fact label="Attempts" value={String(request.notificationAttemptCount ?? 0)} />
+    {request.notificationAttemptedAtUtc ? <Fact label="Last attempt" value={formatDateTime(request.notificationAttemptedAtUtc)} /> : null}
+    {request.notificationDeliveredAtUtc ? <Fact label="Delivered" value={formatDateTime(request.notificationDeliveredAtUtc)} /> : null}
+    {request.notificationFailedAtUtc ? <Fact label="Failed" value={formatDateTime(request.notificationFailedAtUtc)} /> : null}
+    {request.notificationFailureCategory ? <Fact label="Category" value={request.notificationFailureCategory} /> : null}
+  </dl>;
 }
 
 interface FactProps {

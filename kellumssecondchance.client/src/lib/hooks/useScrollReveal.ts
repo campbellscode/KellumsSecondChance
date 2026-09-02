@@ -27,6 +27,15 @@ export function useScrollReveal(dependency?: unknown): void {
       { rootMargin: '0px 0px -8% 0px', threshold: 0.06 },
     );
 
+    const selector =
+      '[data-reveal]:not([data-reveal="is-visible"]), [data-reveal-clip]:not([data-reveal-clip="is-visible"])';
+    const observed = new WeakSet<Element>();
+    const observe = (el: Element) => {
+      if (observed.has(el)) return;
+      observed.add(el);
+      observer.observe(el);
+    };
+
     /*
      * Match on attribute PRESENCE, not on an empty value.
      *
@@ -35,11 +44,24 @@ export function useScrollReveal(dependency?: unknown): void {
      * observer never runs, and — because the CSS hides `[data-reveal]` up front —
      * every revealed element would stay at opacity 0 forever.
      */
-    const targets = document.querySelectorAll<HTMLElement>(
-      '[data-reveal]:not([data-reveal="is-visible"]), [data-reveal-clip]:not([data-reveal-clip="is-visible"])',
-    );
-    targets.forEach((el) => observer.observe(el));
+    document.querySelectorAll<HTMLElement>(selector).forEach(observe);
 
-    return () => observer.disconnect();
+    // API-backed cards mount after the route-level scan has already run. Keep
+    // the observer in sync with reveal targets React inserts asynchronously.
+    const mutations = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (!(node instanceof Element)) continue;
+          if (node.matches(selector)) observe(node);
+          node.querySelectorAll(selector).forEach(observe);
+        }
+      }
+    });
+    mutations.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      mutations.disconnect();
+      observer.disconnect();
+    };
   }, [dependency]);
 }

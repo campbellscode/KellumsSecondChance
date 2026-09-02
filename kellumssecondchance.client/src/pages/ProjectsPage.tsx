@@ -65,7 +65,7 @@ export default function ProjectsPage() {
     <>
       <Seo
         title="Second Chances We Have Built"
-        description="Kitchen, bathroom, basement and whole-home renovation case studies — what was wrong, what we did about it, and how the room turned out."
+        description="Published exterior renovation, repair and restoration case studies from Kellum’s Second Chance Renovations."
         path="/projects"
         structuredData={structuredData}
       />
@@ -73,7 +73,7 @@ export default function ProjectsPage() {
       <PageHero
         eyebrow="Second chances we have built"
         title="See what is possible."
-        lead="Not a photo dump. Every project here is a case study: the original problem, the approach, and what the room is actually like now."
+        lead="Not a photo dump. Every project here is a case study: the original problem, the approach, and what the property is actually like now."
         crumbs={CRUMBS}
         image={editorialMedia.process}
         layout="panel"
@@ -216,7 +216,7 @@ export default function ProjectsPage() {
       <CtaSection
         eyebrow="Your project next"
         title="What would yours look like?"
-        body="Send us the room you have been putting off. We will tell you honestly what is possible and what it takes."
+        body="Send us the exterior project you have been putting off. We will tell you honestly what is possible and what it takes."
       />
     </>
   );

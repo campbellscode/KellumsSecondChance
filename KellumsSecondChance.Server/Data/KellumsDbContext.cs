@@ -39,6 +39,10 @@ public class KellumsDbContext(DbContextOptions<KellumsDbContext> options)
     public DbSet<EstimateRequestStatusHistory> EstimateRequestStatusHistory =>
         Set<EstimateRequestStatusHistory>();
 
+    public DbSet<EmploymentInterest> EmploymentInterests => Set<EmploymentInterest>();
+    public DbSet<BookingRequest> BookingRequests => Set<BookingRequest>();
+    public DbSet<GalleryImage> GalleryImages => Set<GalleryImage>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -71,6 +75,18 @@ public class KellumsDbContext(DbContextOptions<KellumsDbContext> options)
         }
 
         foreach (var entry in ChangeTracker.Entries<EstimateRequest>())
+        {
+            if (entry.State == EntityState.Added) entry.Entity.CreatedAtUtc = now;
+            else if (entry.State == EntityState.Modified) entry.Entity.UpdatedAtUtc = now;
+        }
+
+        foreach (var entry in ChangeTracker.Entries<EmploymentInterest>())
+        {
+            if (entry.State == EntityState.Added) entry.Entity.CreatedAtUtc = now;
+            else if (entry.State == EntityState.Modified) entry.Entity.UpdatedAtUtc = now;
+        }
+
+        foreach (var entry in ChangeTracker.Entries<BookingRequest>())
         {
             if (entry.State == EntityState.Added) entry.Entity.CreatedAtUtc = now;
             else if (entry.State == EntityState.Modified) entry.Entity.UpdatedAtUtc = now;

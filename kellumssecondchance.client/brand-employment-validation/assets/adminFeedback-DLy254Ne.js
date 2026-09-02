@@ -1,0 +1,1 @@
+import{r as e}from"./cn-CpBeUGFU.js";import{ft as t}from"./icons-CzYe-RxA.js";var n=e(t(),1),r=(0,n.createContext)(null),i={success:()=>{},error:()=>{},info:()=>{}};function a(){return(0,n.useContext)(r)??i}var o=(0,n.createContext)(null),s={isDirty:!1,setDirty:()=>{},confirmDiscard:e=>e()};function c(){return(0,n.useContext)(o)??s}export{a as i,r as n,c as r,o as t};

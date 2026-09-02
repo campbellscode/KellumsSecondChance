@@ -25,6 +25,7 @@ export const sampleSiteContent: SiteContent = {
   addressPostalCode: business.address?.postalCode ?? null,
   siteUrl: business.siteUrl,
   ogImagePath: business.ogImagePath,
+  googleReviewUrl: null,
   socialLinks: business.social.map((s) => ({ label: s.label, href: s.href, icon: s.icon })),
   // Nobody has supplied trading hours, so the site shows none. See business.ts.
   officeHours: [],

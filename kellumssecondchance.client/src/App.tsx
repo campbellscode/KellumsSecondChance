@@ -1,4 +1,5 @@
-import { lazy } from 'react';
+import { lazy, useEffect } from 'react';
+import { captureFirstTouch } from '@/lib/attribution';
 import { Route, Routes } from 'react-router-dom';
 import { SiteLayout } from '@/components/layout/SiteLayout';
 import { SiteContentProvider } from '@/lib/SiteContentProvider';
@@ -13,6 +14,7 @@ import HomePage from '@/pages/HomePage';
 const ServicesPage = lazy(() => import('@/pages/ServicesPage'));
 const ServiceDetailPage = lazy(() => import('@/pages/ServiceDetailPage'));
 const ProjectsPage = lazy(() => import('@/pages/ProjectsPage'));
+const GalleryPage = lazy(() => import('@/pages/GalleryPage'));
 const ProjectDetailPage = lazy(() => import('@/pages/ProjectDetailPage'));
 const AboutPage = lazy(() => import('@/pages/AboutPage'));
 const ReviewsPage = lazy(() => import('@/pages/ReviewsPage'));
@@ -22,6 +24,8 @@ const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const EstimatePage = lazy(() => import('@/pages/EstimatePage'));
 const PrivacyPage = lazy(() => import('@/pages/PrivacyPage'));
 const TermsPage = lazy(() => import('@/pages/TermsPage'));
+const WorkWithUsPage = lazy(() => import('@/pages/WorkWithUsPage'));
+const BookingsPage = lazy(() => import('@/pages/BookingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout'));
@@ -38,8 +42,12 @@ const AdminTestimonialsPage = lazy(() => import('@/pages/admin/AdminTestimonials
 const AdminFaqsPage = lazy(() => import('@/pages/admin/AdminFaqsPage'));
 const AdminServiceAreasPage = lazy(() => import('@/pages/admin/AdminServiceAreasPage'));
 const AdminSiteSettingsPage = lazy(() => import('@/pages/admin/AdminSiteSettingsPage'));
+const AdminEmploymentInterestsPage = lazy(() => import('@/pages/admin/AdminEmploymentInterestsPage'));
+const AdminBookingsPage = lazy(() => import('@/pages/admin/AdminBookingsPage'));
+const AdminGalleryPage = lazy(() => import('@/pages/admin/AdminGalleryPage'));
 
 export default function App() {
+  useEffect(captureFirstTouch, []);
   return (
     <SiteContentProvider>
       <ErrorBoundary>
@@ -49,6 +57,7 @@ export default function App() {
             <Route path="services" element={<ServicesPage />} />
             <Route path="services/:slug" element={<ServiceDetailPage />} />
             <Route path="projects" element={<ProjectsPage />} />
+            <Route path="gallery" element={<GalleryPage />} />
             <Route path="projects/:slug" element={<ProjectDetailPage />} />
             <Route path="about" element={<AboutPage />} />
             <Route path="reviews" element={<ReviewsPage />} />
@@ -58,6 +67,8 @@ export default function App() {
             <Route path="request-estimate" element={<EstimatePage />} />
             <Route path="privacy" element={<PrivacyPage />} />
             <Route path="terms" element={<TermsPage />} />
+            <Route path="work-with-us" element={<WorkWithUsPage />} />
+            <Route path="bookings" element={<BookingsPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 
@@ -66,7 +77,10 @@ export default function App() {
             <Route index element={<AdminDashboardPage />} />
             <Route path="estimate-requests" element={<AdminEstimateRequestsPage />} />
             <Route path="estimate-requests/:id" element={<AdminEstimateRequestDetailPage />} />
+            <Route path="employment-interests" element={<AdminEmploymentInterestsPage />} />
+            <Route path="bookings" element={<AdminBookingsPage />} />
             <Route path="projects" element={<AdminProjectsPage />} />
+            <Route path="gallery" element={<AdminGalleryPage />} />
             {/* "new" and an id share one editor — the same form, one without a record. */}
             <Route path="projects/new" element={<AdminProjectEditorPage />} />
             <Route path="projects/:id" element={<AdminProjectEditorPage />} />

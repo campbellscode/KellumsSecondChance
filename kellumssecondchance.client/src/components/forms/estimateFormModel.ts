@@ -5,6 +5,7 @@ import type {
   ProjectTimeline,
   PropertyType,
 } from '@/lib/api/types';
+import { firstTouch } from '@/lib/attribution';
 
 /**
  * Client-side model for the estimate request.
@@ -208,6 +209,7 @@ export function toPayload(state: EstimateFormState, elapsedMs: number): Estimate
   const trim = (value: string) => value.trim();
   const orNull = (value: string) => (trim(value).length > 0 ? trim(value) : null);
 
+  const attribution=firstTouch();
   return {
     firstName: trim(state.firstName),
     lastName: trim(state.lastName),
@@ -223,6 +225,9 @@ export function toPayload(state: EstimateFormState, elapsedMs: number): Estimate
     description: trim(state.description),
     preferredContactMethod: state.preferredContactMethod,
     referralSource: orNull(state.referralSource),
+    landingPage: attribution.landingPage ?? null, referrerUrl: attribution.referrerUrl ?? null,
+    utmSource: attribution.utmSource ?? null, utmMedium: attribution.utmMedium ?? null,
+    utmCampaign: attribution.utmCampaign ?? null, utmTerm: attribution.utmTerm ?? null, utmContent: attribution.utmContent ?? null,
     companyWebsite: orNull(state.companyWebsite),
     elapsedMs,
   };

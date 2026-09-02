@@ -21,9 +21,9 @@ const COPY: Record<SampleContentContext, { label: string; body: string }> = {
       'Our own project photography and stories are being put together right now. Until they are ready, these show how a finished Kellum’s write-up reads — they are not records of completed jobs.',
   },
   comparisons: {
-    label: 'Example write-ups',
+    label: 'Example transformations',
     body:
-      'These comparisons show how we present a transformation. They are illustrations, not photographs of finished Kellum’s work — the real ones are on the way.',
+      'Shown for illustration. These are not photographs of completed Kellum’s projects — the real ones are on the way.',
   },
   reviews: {
     label: 'No reviews published yet',

@@ -73,6 +73,13 @@ public class CreateEstimateRequestDto
 
     [StringLength(60, ErrorMessage = "That referral source is too long.")]
     public string? ReferralSource { get; set; }
+    [StringLength(500)] public string? LandingPage { get; set; }
+    [StringLength(1000)] public string? ReferrerUrl { get; set; }
+    [StringLength(120)] public string? UtmSource { get; set; }
+    [StringLength(120)] public string? UtmMedium { get; set; }
+    [StringLength(200)] public string? UtmCampaign { get; set; }
+    [StringLength(200)] public string? UtmTerm { get; set; }
+    [StringLength(200)] public string? UtmContent { get; set; }
 
     /// <summary>
     /// Honeypot. The real form hides this field from both sighted users and

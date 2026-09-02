@@ -31,6 +31,7 @@ import { getServices } from '@/lib/api/endpoints';
 import { useSiteContent } from '@/lib/siteContentContext';
 import { cn } from '@/lib/cn';
 import type { EstimateRequestResult } from '@/lib/api/types';
+import { trackEvent } from '@/lib/analytics';
 
 const STEPS = [
   { title: 'What needs a second chance?', hint: 'Pick everything that applies.' },
@@ -137,6 +138,7 @@ export function EstimateForm() {
       const payload = toPayload(form, elapsedMs);
       const response = await submitEstimateRequest(payload);
       setResult(response);
+      trackEvent('estimate_form_submitted');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       if (error instanceof ApiError) {
@@ -303,7 +305,7 @@ export function EstimateForm() {
           maxLength={4000}
           showCount
           hint="What is wrong with the space now, what you would like it to be, anything you have already tried. There is no wrong amount of detail."
-          placeholder="Our kitchen is from the eighties and the layout does not work for two people cooking. The cabinets are still solid but the counters are damaged…"
+          placeholder="Tell us what is happening with your home’s exterior, what you would like changed, and anything else that may help us understand the project."
           value={form.description}
           onChange={(event) => set('description', event.target.value)}
           onBlur={() => blur('description')}

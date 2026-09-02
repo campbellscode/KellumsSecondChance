@@ -2,7 +2,16 @@
 
 Marketing site and lead-capture application for a residential renovation company.
 
-**"We give homes a second chance."**
+## Brand message hierarchy
+
+- **Homeowner promise:** “Your home deserves a second chance.”
+- **Master brand idea:** “Second chances are what we build.”
+- **Human mission:** “Homes deserve second chances. People do too.”
+
+The name carries two connected commitments: restoring homes with professional
+craftsmanship and seeing the potential in people who are ready to work, learn
+and build what comes next. Quality, accountability and opportunity reinforce
+one another; the mission never lowers the standard brought into a customer’s home.
 
 ---
 
@@ -36,12 +45,13 @@ Apply the schema. **This has deliberately not been run for you.**
 dotnet ef database update --project KellumsSecondChance.Server
 ```
 
-There are two migrations, applied in order:
+There are three migrations, applied in order:
 
 | Migration | What it does |
 | --- | --- |
 | `InitialKellumsSchema` | Creates 16 tables (9 application tables plus the 7 ASP.NET Identity tables) and 23 indexes. No seed data. |
 | `AdminCmsOperationalPhase` | **Additive only.** Adds the `EstimateRequestNotes` and `EstimateRequestStatusHistory` tables, four upload columns on `RenovationProjectImages`, a `rowversion` column on `RenovationProjects`, `RenovationServices`, `FaqItems` and `EstimateRequests`, and widens `SiteSettings.Value` from 1000 to 4000 characters. Drops nothing and truncates nothing. |
+| `AddEmploymentInterests` | **Additive only.** Adds the private `EmploymentInterests` table and its status/date and anti-spam indexes. It does not alter existing tables. |
 
 ### 2. Sample content
 
@@ -88,6 +98,7 @@ and no redeploy.
 | --- | --- |
 | Dashboard | Lead pipeline counts, the latest requests, and **Needs your attention** — every reason something is not on the website, each with a link to the screen that fixes it. |
 | Estimate requests | Search and filter every lead; open one to call or email the customer, record dated notes, and move it through the pipeline. Stage changes are logged with who and when. |
+| Work enquiries | Review preliminary employment-interest messages, contact the sender, add private notes, and move the enquiry through a small triage workflow. |
 | Projects | Full case-study editor, plus photo upload, ordering, cover selection and before/after pairing. |
 | Services | The service catalogue. A service still used by a project cannot be deleted — switch it off instead. |
 | Reviews | Real customer quotes. Seeded examples stay labelled as examples and are excluded from review markup. |
