@@ -133,10 +133,10 @@ from `/uploads`.
 
 ### Lead notifications
 
-There is **no email provider configured**. `INotificationSender` writes to the
-application log and reports honestly that nothing was transmitted — it never
-claims a message was sent. Adding real delivery means replacing that one
-interface; `Notifications:EstimateRequestRecipients` is already read.
+Branded form notifications use Resend behind `INotificationSender`. Delivery is
+disabled until the `EmailNotifications` settings and secret API key are supplied.
+Submissions are committed before delivery is attempted, so a provider outage does
+not turn a saved submission into a visitor-facing failure.
 
 ---
 
@@ -247,8 +247,10 @@ dotnet test
 | `MediaStorage:RootPath` | Where uploaded project photographs are written. Empty means `wwwroot/uploads`. Point it outside the deployment folder to survive a redeploy. |
 | `MediaStorage:PublicPathPrefix` | URL prefix the media root is served from. Default `uploads`. |
 | `MediaStorage:MaxUploadMegabytes` | Per-file upload ceiling. Default 12. |
-| `Notifications:EstimateRequestRecipients` | Who should be told about a new lead, once a delivery provider exists. |
-| `Notifications:AdminBaseUrl` | Absolute origin for deep links into the console. Falls back to the request's origin. |
+| `EmailNotifications:FromName`, `FromAddress` | Server-controlled Resend sender identity. The From domain must be verified in Resend. |
+| `EmailNotifications:NotificationAddress` | Server-controlled business recipient for Contact, Booking and Work With Us. |
+| `EmailNotifications:ResendApiKey` | Secret Resend credential; User Secrets/environment only. |
+| `EmailNotifications:AdminBaseUrl` | Absolute origin for deep links into the console. Falls back to the request's origin. |
 | `AntiSpam:IpHashSalt` | **Must** be overridden per environment. Salts the submitter IP hash. |
 | `AntiSpam:MinimumFillMilliseconds` | Rejects submissions completed faster than a human could. |
 | `AntiSpam:MaxSubmissionsPerWindow` | Per-source burst limit, on top of the endpoint rate limiter. |

@@ -1,206 +1,94 @@
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Net.Mail;
 using KellumsSecondChance.Server.Configuration;
+using KellumsSecondChance.Server.Data;
 using KellumsSecondChance.Server.Domain.Entities;
 using Microsoft.Extensions.Options;
-using System.Net;
-using System.Net.Mail;
-using KellumsSecondChance.Server.Data;
 
 namespace KellumsSecondChance.Server.Services;
 
-/// <summary>A message the business should receive. Provider-agnostic.</summary>
-/// <param name="Reference">
-/// Opaque identifier safe to log. The subject and body carry the customer's
-/// name and contact details, so nothing but this reaches the application log.
-/// </param>
-public sealed record Notification(
-    IReadOnlyList<string> Recipients,
-    string Subject,
-    string PlainTextBody,
-    string Reference);
+public sealed record Notification(string Subject, string HtmlBody, string PlainTextBody, string? ReplyTo, string Reference);
+public interface INotificationSender { Task SendAsync(Notification notification, CancellationToken ct = default); }
 
-/// <summary>
-/// Delivers operational notifications.
-///
-/// ⚠ NO DELIVERY PROVIDER IS CONFIGURED IN THIS BUILD.
-///
-/// The project has no SMTP or transactional-email dependency, and inventing one
-/// — hardcoded credentials, a fake "sent" result, or an unapproved paid service
-/// — would be worse than having none. So this is the seam and nothing more.
-///
-/// TO ENABLE DELIVERY: implement this interface against your chosen provider,
-/// register it in Program.cs in place of <see cref="LoggingNotificationSender"/>,
-/// and set Notifications:EstimateRequestRecipients.
-/// </summary>
-public interface INotificationSender
+public sealed class ResendNotificationSender(HttpClient http, IOptions<EmailNotificationOptions> options, ILogger<ResendNotificationSender> logger) : INotificationSender
 {
-    Task SendAsync(Notification notification, CancellationToken ct = default);
-}
-
-/// <summary>
-/// The no-provider implementation: records that a notification was due.
-///
-/// It never claims a message was delivered. The log line is the honest record
-/// that an alert would have gone out, so nothing silently disappears while the
-/// provider is still outstanding.
-/// </summary>
-public class LoggingNotificationSender(ILogger<LoggingNotificationSender> logger) : INotificationSender
-{
-    public Task SendAsync(Notification notification, CancellationToken ct = default)
+    private readonly EmailNotificationOptions config = options.Value;
+    public async Task SendAsync(Notification n, CancellationToken ct = default)
     {
-        /*
-         * The REFERENCE is logged, never the subject.
-         *
-         * The subject names the customer. Application logs are shipped to
-         * places an email inbox is not — a log aggregator, a support ticket, a
-         * screenshot — and a homeowner's name has no business travelling that
-         * far to record that a notification was due.
-         */
-        if (notification.Recipients.Count == 0)
-        {
-            logger.LogInformation(
-                "Notification not dispatched — no recipients configured. Reference: {Reference}",
-                notification.Reference);
-            return Task.CompletedTask;
-        }
-
-        logger.LogInformation(
-            "Notification ready but NOT delivered (no email provider configured). "
-            + "Reference: {Reference}; Recipients: {RecipientCount}",
-            notification.Reference,
-            notification.Recipients.Count);
-
-        return Task.CompletedTask;
+        if (!config.Enabled) return;
+        using var request = new HttpRequestMessage(HttpMethod.Post, "emails");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", config.ResendApiKey);
+        request.Content = JsonContent.Create(new { from = $"{config.FromName} <{config.FromAddress}>", to = new[] { config.NotificationAddress! }, subject = n.Subject, html = n.HtmlBody, text = n.PlainTextBody, reply_to = n.ReplyTo });
+        using var response = await http.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode) throw new HttpRequestException($"Resend rejected the notification with HTTP {(int)response.StatusCode}.", null, response.StatusCode);
+        logger.LogInformation("Email notification delivered. Reference: {Reference}; Provider: Resend", n.Reference);
     }
 }
 
-public sealed class SmtpNotificationSender(IOptions<NotificationOptions> options) : INotificationSender
-{
-    private readonly NotificationOptions _options = options.Value;
-    public async Task SendAsync(Notification notification, CancellationToken ct = default)
-    {
-        using var message = new MailMessage { From = new MailAddress(_options.FromAddress!, _options.FromDisplayName), Subject = notification.Subject, Body = notification.PlainTextBody, IsBodyHtml = false };
-        foreach (var recipient in notification.Recipients) message.To.Add(recipient);
-        using var client = new SmtpClient(_options.SmtpHost!, _options.SmtpPort) { EnableSsl = _options.SmtpUseTls, Timeout = _options.TimeoutSeconds * 1000 };
-        if (!string.IsNullOrWhiteSpace(_options.SmtpUsername)) client.Credentials = new NetworkCredential(_options.SmtpUsername, _options.SmtpPassword);
-        ct.ThrowIfCancellationRequested();
-        await client.SendMailAsync(message, ct);
-    }
-}
-
-/// <summary>Builds and dispatches the "a new lead arrived" alert.</summary>
-public interface IEstimateRequestNotifier
-{
-    Task NotifyNewRequestAsync(EstimateRequest request, string? adminBaseUrl, CancellationToken ct = default);
-}
-
+public interface IEstimateRequestNotifier { Task NotifyNewRequestAsync(EstimateRequest request, string? adminBaseUrl, CancellationToken ct = default); }
 public interface IEmploymentInterestNotifier { Task NotifyAsync(EmploymentInterest interest, string? requestOrigin, CancellationToken ct = default); }
 public interface IBookingRequestNotifier { Task NotifyAsync(BookingRequest request, string? requestOrigin, CancellationToken ct = default); }
-public class BookingRequestNotifier(INotificationSender sender, IOptions<NotificationOptions> options, ILogger<BookingRequestNotifier> logger) : IBookingRequestNotifier
+
+internal static class NotificationTemplate
 {
-    public async Task NotifyAsync(BookingRequest request, string? requestOrigin, CancellationToken ct = default)
+    public static Notification Build(string heading, string subject, DateTime submittedUtc, IEnumerable<(string Label, string? Value)> fields, string messageLabel, string? message, string? replyTo, string reference, string? adminLink)
+    {
+        var rows = fields.Where(x => !string.IsNullOrWhiteSpace(x.Value)).ToArray();
+        var details = string.Join("", rows.Select(x => $"<tr><td style=\"padding:9px 12px;color:#6b6258;font-size:13px;border-bottom:1px solid #e8e1d8;width:34%;vertical-align:top\">{E(x.Label)}</td><td style=\"padding:9px 12px;color:#211d19;font-size:14px;border-bottom:1px solid #e8e1d8;vertical-align:top\">{E(x.Value!)}</td></tr>"));
+        var messageHtml = string.IsNullOrWhiteSpace(message) ? "" : $"<h2 style=\"font-size:16px;margin:26px 0 8px;color:#211d19\">{E(messageLabel)}</h2><div style=\"background:#f6f2ec;border-left:4px solid #b55a32;padding:16px;white-space:pre-wrap;line-height:1.55;color:#302922\">{E(message!)}</div>";
+        var linkHtml = string.IsNullOrWhiteSpace(adminLink) ? "" : $"<p style=\"margin:26px 0 0\"><a href=\"{E(adminLink!)}\" style=\"display:inline-block;background:#b55a32;color:#fff;text-decoration:none;padding:11px 17px;border-radius:4px\">Open admin console</a></p>";
+        var html = $"""
+<!doctype html><html><body style="margin:0;background:#eee9e2;font-family:Arial,sans-serif"><div style="display:none;max-height:0;overflow:hidden">{E(subject)}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#eee9e2"><tr><td align="center" style="padding:24px 12px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#fff;border-radius:8px;overflow:hidden"><tr><td style="background:#211d19;padding:25px 28px;color:#fff"><div style="font-size:21px;font-weight:700">Kellum's Second Chance</div><div style="font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:#dccbbb;margin-top:4px">Renovations</div></td></tr><tr><td style="padding:30px 28px"><h1 style="font-size:24px;line-height:1.25;margin:0 0 8px;color:#211d19">{E(heading)}</h1><p style="margin:0 0 22px;color:#6b6258;font-size:13px">Submitted {submittedUtc:MMMM d, yyyy 'at' h:mm tt} UTC · Ref {E(reference)}</p><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #e8e1d8;border-radius:5px;border-collapse:collapse">{details}</table>{messageHtml}{linkHtml}</td></tr><tr><td style="background:#f6f2ec;padding:20px 28px;color:#6b6258;font-size:12px;line-height:1.5">Sent securely from the Kellum's Second Chance Renovations website. Replying addresses the submitter when a validated email was provided.</td></tr></table></td></tr></table></body></html>
+""";
+        var text = $"{heading}\nSubmitted {submittedUtc:O}\nReference: {reference}\n\n" + string.Join("\n", rows.Select(x => $"{x.Label}: {x.Value}")) + (string.IsNullOrWhiteSpace(message) ? "" : $"\n\n{messageLabel}:\n{message}") + (string.IsNullOrWhiteSpace(adminLink) ? "" : $"\n\nOpen admin console: {adminLink}");
+        return new(subject, html, text, ValidEmail(replyTo), reference);
+    }
+    private static string E(string value) => WebUtility.HtmlEncode(value);
+    private static string? ValidEmail(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Contains('\r') || value.Contains('\n')) return null;
+        try { var trimmed = value.Trim(); var address = new MailAddress(trimmed); return address.Address == trimmed ? address.Address : null; } catch (FormatException) { return null; }
+    }
+}
+
+public sealed class BookingRequestNotifier(INotificationSender sender, IOptions<EmailNotificationOptions> options, ILogger<BookingRequestNotifier> logger) : IBookingRequestNotifier
+{
+    public async Task NotifyAsync(BookingRequest x, string? origin, CancellationToken ct = default)
     {
         if (!options.Value.Enabled) return;
-        try
-        {
-            var origin = (options.Value.AdminBaseUrl ?? requestOrigin)?.TrimEnd('/');
-            var link = origin is null ? "/admin/bookings" : $"{origin}/admin/bookings";
-            var body = string.Join('\n', "A new booking request has arrived.", string.Empty,
-                $"Name: {request.FirstName} {request.LastName}", $"Email: {request.Email}", $"Phone: {request.Phone}",
-                $"Preferred: {request.PreferredDate:yyyy-MM-dd} at {request.PreferredTime:HH:mm}", string.Empty,
-                $"Open it in the console: {link}");
-            await sender.SendAsync(new Notification(options.Value.EstimateRequestRecipients,
-                $"New booking request — {request.FirstName} {request.LastName}", body, $"BOOK-{request.Id}"), ct);
-        }
-        catch (Exception ex) { logger.LogError(ex, "Notification for booking request {BookingId} failed.", request.Id); }
+        var n = NotificationTemplate.Build("New Booking Request", $"New Booking Request — {x.FirstName} {x.LastName}", x.CreatedAtUtc,
+            [("Name", $"{x.FirstName} {x.LastName}"), ("Email", x.Email), ("Phone", x.Phone), ("Preferred date", x.PreferredDate.ToString("MMMM d, yyyy")), ("Preferred time", x.PreferredTime.ToString("h:mm tt")), ("Alternate date", x.AlternateDate?.ToString("MMMM d, yyyy")), ("Alternate time", x.AlternateTime?.ToString("h:mm tt")), ("Service address", x.Address), ("City", x.City), ("State", x.State), ("ZIP / postal code", x.PostalCode), ("Notes", x.Notes)], "Project description", x.ProjectDescription, x.Email, $"BOOK-{x.Id}", Link(options.Value.AdminBaseUrl ?? origin, "/admin/bookings"));
+        try { await sender.SendAsync(n, ct); } catch (Exception ex) { logger.LogError(ex, "Email notification failed after booking request {BookingId} was persisted.", x.Id); }
     }
-}
-public class EmploymentInterestNotifier(INotificationSender sender, IOptions<NotificationOptions> options, ILogger<EmploymentInterestNotifier> logger, KellumsDbContext db) : IEmploymentInterestNotifier
-{
-    public async Task NotifyAsync(EmploymentInterest x, string? requestOrigin, CancellationToken ct = default)
-    {
-        if(!options.Value.Enabled)return; x.NotificationAttemptCount++;x.NotificationAttemptedAtUtc=DateTime.UtcNow;
-        try {
-            var o=options.Value; var origin=(o.AdminBaseUrl??requestOrigin)?.TrimEnd('/');
-            var link=origin is null?"/admin/employment-interests":$"{origin}/admin/employment-interests";
-            var body=string.Join('\n',$"A new work-interest enquiry has arrived.","",$"Name: {x.FirstName} {x.LastName}",$"Email: {x.Email}",$"Phone: {x.Phone??"not given"}",$"Preferred contact: {x.PreferredContactMethod}",$"Work interest: {x.WorkInterest}",$"Availability: {x.Availability??"not given"}","",$"Open it in the console: {link}");
-            await sender.SendAsync(new Notification(o.EmploymentInterestRecipients,$"New Kellum's work interest enquiry — {x.FirstName} {x.LastName}",body,$"WORK-{x.Id}"),ct);x.NotificationDeliveredAtUtc=DateTime.UtcNow;x.NotificationFailedAtUtc=null;x.NotificationFailureCategory=null;
-        } catch(Exception ex) { x.NotificationFailedAtUtc=DateTime.UtcNow;x.NotificationFailureCategory=ex is SmtpException?"Connection":ex is TimeoutException?"Timeout":"Unknown";logger.LogError(ex,"Notification for employment interest {InterestId} failed.",x.Id); }
-        finally
-        {
-            try { await db.SaveChangesAsync(CancellationToken.None); }
-            catch (Exception ex) { logger.LogError(ex, "Notification state for employment interest {InterestId} could not be recorded.", x.Id); }
-        }
-    }
+    private static string Link(string? origin, string path) => string.IsNullOrWhiteSpace(origin) ? path : origin.TrimEnd('/') + path;
 }
 
-public class EstimateRequestNotifier(
-    INotificationSender sender,
-    IOptions<NotificationOptions> options,
-    ILogger<EstimateRequestNotifier> logger, KellumsDbContext db) : IEstimateRequestNotifier
+public sealed class EmploymentInterestNotifier(INotificationSender sender, IOptions<EmailNotificationOptions> options, ILogger<EmploymentInterestNotifier> logger, KellumsDbContext db) : IEmploymentInterestNotifier
 {
-    private readonly NotificationOptions _options = options.Value;
-
-    public async Task NotifyNewRequestAsync(
-        EstimateRequest request,
-        string? adminBaseUrl,
-        CancellationToken ct = default)
+    public async Task NotifyAsync(EmploymentInterest x, string? origin, CancellationToken ct = default)
     {
-        /*
-         * THE LEAD IS ALREADY SAVED BEFORE THIS RUNS, AND NOTHING HERE MAY THROW.
-         *
-         * A notification failure must never cost the business a lead. The whole
-         * body is wrapped, the caller does not await a delivery result, and the
-         * submission endpoint has already returned its reference to the customer.
-         */
-        if(!_options.Enabled)return; request.NotificationAttemptCount++;request.NotificationAttemptedAtUtc=DateTime.UtcNow;
-        try
-        {
-            var baseUrl = (_options.AdminBaseUrl ?? adminBaseUrl)?.TrimEnd('/');
-            var link = baseUrl is null
-                ? "/admin/estimate-requests"
-                : $"{baseUrl}/admin/estimate-requests";
-
-            // Deliberately minimal. The address, budget, timeline and full
-            // description stay in the console behind authentication rather than
-            // travelling through an inbox.
-            var body = string.Join(
-                '\n',
-                $"A new estimate request has come in ({request.Reference}).",
-                string.Empty,
-                $"Name:    {request.FirstName} {request.LastName}",
-                $"Phone:   {request.Phone ?? "not given"}",
-                $"Email:   {request.Email}",
-                $"Project: {(request.ProjectTypeSlugs.Count > 0 ? string.Join(", ", request.ProjectTypeSlugs) : "not specified")}",
-                string.Empty,
-                Summarise(request.Description),
-                string.Empty,
-                $"Open it in the console: {link}");
-
-            await sender.SendAsync(
-                new Notification(
-                    _options.EstimateRequestRecipients,
-                    $"New estimate request — {request.FirstName} {request.LastName} ({request.Reference})",
-                    body,
-                    request.Reference),
-                ct);
-            request.NotificationDeliveredAtUtc=DateTime.UtcNow;request.NotificationFailedAtUtc=null;request.NotificationFailureCategory=null;
-        }
-        catch (Exception ex)
-        {
-            request.NotificationFailedAtUtc=DateTime.UtcNow;request.NotificationFailureCategory=ex is SmtpException?"Connection":ex is TimeoutException?"Timeout":"Unknown";logger.LogError(ex, "Notification for estimate request {Reference} failed.", request.Reference);
-        }
-        finally
-        {
-            try { await db.SaveChangesAsync(CancellationToken.None); }
-            catch (Exception ex) { logger.LogError(ex, "Notification state for estimate request {Reference} could not be recorded.", request.Reference); }
-        }
+        if (!options.Value.Enabled) return; x.NotificationAttemptCount++; x.NotificationAttemptedAtUtc = DateTime.UtcNow;
+        try { var n = NotificationTemplate.Build("New Work With Us Application", $"New Work With Us Application — {x.FirstName} {x.LastName}", x.CreatedAtUtc,
+            [("Name", $"{x.FirstName} {x.LastName}"), ("Email", x.Email), ("Phone", x.Phone), ("Preferred contact", x.PreferredContactMethod.ToString()), ("General work experience", x.GeneralWorkExperience), ("Areas of experience or skills", x.AreasOfExperience), ("Work interest", x.WorkInterest), ("Availability", x.Availability)], "Additional message", x.Message, x.Email, $"WORK-{x.Id}", Link(options.Value.AdminBaseUrl ?? origin, "/admin/employment-interests")); await sender.SendAsync(n, ct); x.NotificationDeliveredAtUtc = DateTime.UtcNow; x.NotificationFailedAtUtc = null; x.NotificationFailureCategory = null; }
+        catch (Exception ex) { x.NotificationFailedAtUtc = DateTime.UtcNow; x.NotificationFailureCategory = Category(ex); logger.LogError(ex, "Email notification failed after work-with-us application {InterestId} was persisted.", x.Id); }
+        finally { try { await db.SaveChangesAsync(CancellationToken.None); } catch (Exception ex) { logger.LogError(ex, "Notification state for work-with-us application {InterestId} could not be recorded.", x.Id); } }
     }
+    private static string Link(string? origin, string path) => string.IsNullOrWhiteSpace(origin) ? path : origin.TrimEnd('/') + path;
+    private static string Category(Exception ex) => ex is TimeoutException or TaskCanceledException ? "Timeout" : ex is HttpRequestException ? "Connection" : "Unknown";
+}
 
-    /// <summary>First couple of lines only — the console holds the rest.</summary>
-    private static string Summarise(string description)
+public sealed class EstimateRequestNotifier(INotificationSender sender, IOptions<EmailNotificationOptions> options, ILogger<EstimateRequestNotifier> logger, KellumsDbContext db) : IEstimateRequestNotifier
+{
+    public async Task NotifyNewRequestAsync(EstimateRequest x, string? origin, CancellationToken ct = default)
     {
-        const int limit = 300;
-        var trimmed = description.Trim();
-        return trimmed.Length <= limit ? trimmed : trimmed[..limit] + "…";
+        if (!options.Value.Enabled) return; x.NotificationAttemptCount++; x.NotificationAttemptedAtUtc = DateTime.UtcNow;
+        try { var n = NotificationTemplate.Build("New Contact Inquiry", $"New Contact Inquiry — {x.FirstName} {x.LastName}", x.CreatedAtUtc,
+            [("Name", $"{x.FirstName} {x.LastName}"), ("Email", x.Email), ("Phone", x.Phone), ("Project types", x.ProjectTypeSlugs.Count == 0 ? null : string.Join(", ", x.ProjectTypeSlugs)), ("Property type", x.PropertyType.ToString()), ("Address", x.AddressLine), ("City", x.City), ("ZIP / postal code", x.PostalCode), ("Timeline", x.Timeline.ToString()), ("Budget", x.BudgetRange.ToString()), ("Preferred contact", x.PreferredContactMethod.ToString()), ("Referral source", x.ReferralSource), ("Landing page", x.LandingPage), ("Referrer", x.ReferrerUrl), ("UTM source", x.UtmSource), ("UTM medium", x.UtmMedium), ("UTM campaign", x.UtmCampaign), ("UTM term", x.UtmTerm), ("UTM content", x.UtmContent)], "Project description", x.Description, x.Email, x.Reference, Link(options.Value.AdminBaseUrl ?? origin, "/admin/estimate-requests")); await sender.SendAsync(n, ct); x.NotificationDeliveredAtUtc = DateTime.UtcNow; x.NotificationFailedAtUtc = null; x.NotificationFailureCategory = null; }
+        catch (Exception ex) { x.NotificationFailedAtUtc = DateTime.UtcNow; x.NotificationFailureCategory = Category(ex); logger.LogError(ex, "Email notification failed after contact inquiry {Reference} was persisted.", x.Reference); }
+        finally { try { await db.SaveChangesAsync(CancellationToken.None); } catch (Exception ex) { logger.LogError(ex, "Notification state for contact inquiry {Reference} could not be recorded.", x.Reference); } }
     }
+    private static string Link(string? origin, string path) => string.IsNullOrWhiteSpace(origin) ? path : origin.TrimEnd('/') + path;
+    private static string Category(Exception ex) => ex is TimeoutException or TaskCanceledException ? "Timeout" : ex is HttpRequestException ? "Connection" : "Unknown";
 }

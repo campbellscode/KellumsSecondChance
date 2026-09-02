@@ -150,28 +150,20 @@ public class MediaStorageOptions
 ///
 /// No provider is configured in this build. See INotificationSender.
 /// </summary>
-public class NotificationOptions
+public class EmailNotificationOptions
 {
-    public const string SectionName = "Notifications";
-
-    /// <summary>Addresses that should be told about a new estimate request.</summary>
-    public List<string> EstimateRequestRecipients { get; set; } = [];
+    public const string SectionName = "EmailNotifications";
+    public bool Enabled { get; set; }
+    public string FromName { get; set; } = "Kellum's Second Chance Renovations";
+    [EmailAddress] public string? FromAddress { get; set; }
+    [EmailAddress] public string? NotificationAddress { get; set; }
+    public string? ResendApiKey { get; set; }
 
     /// <summary>
     /// Absolute base URL used to build the deep link into the admin console,
     /// e.g. "https://www.example.com". Falls back to the request's own origin.
     /// </summary>
     public string? AdminBaseUrl { get; set; }
-    public bool Enabled { get; set; }
-    public string Provider { get; set; } = "Logging";
-    public string? SmtpHost { get; set; }
-    [Range(1, 65535)] public int SmtpPort { get; set; } = 587;
-    public bool SmtpUseTls { get; set; } = true;
-    public string? SmtpUsername { get; set; }
-    public string? SmtpPassword { get; set; }
-    [EmailAddress] public string? FromAddress { get; set; }
-    public string FromDisplayName { get; set; } = "Kellum's Website";
-    public List<string> EmploymentInterestRecipients { get; set; } = [];
     [Range(1, 120)] public int TimeoutSeconds { get; set; } = 20;
 }
 

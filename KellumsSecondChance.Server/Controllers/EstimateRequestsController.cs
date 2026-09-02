@@ -79,7 +79,7 @@ public class EstimateRequestsController(
 
     /// <summary>
     /// This request's own origin, used to build a console deep link when
-    /// Notifications:AdminBaseUrl has not been configured.
+    /// EmailNotifications:AdminBaseUrl has not been configured.
     /// </summary>
     private string? RequestOrigin() =>
         Request.Host.HasValue ? $"{Request.Scheme}://{Request.Host}" : null;

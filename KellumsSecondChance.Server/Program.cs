@@ -46,15 +46,13 @@ builder.Services
     .ValidateOnStart();
 
 builder.Services
-    .AddOptions<NotificationOptions>()
-    .Bind(builder.Configuration.GetSection(NotificationOptions.SectionName))
+    .AddOptions<EmailNotificationOptions>()
+    .Bind(builder.Configuration.GetSection(EmailNotificationOptions.SectionName))
     .ValidateDataAnnotations()
-    .Validate(o => !o.Enabled || o.Provider.Equals("Smtp", StringComparison.OrdinalIgnoreCase)
-        && !string.IsNullOrWhiteSpace(o.SmtpHost)
+    .Validate(o => !o.Enabled || !string.IsNullOrWhiteSpace(o.ResendApiKey)
         && !string.IsNullOrWhiteSpace(o.FromAddress)
-        && o.EstimateRequestRecipients.Count > 0
-        && o.EmploymentInterestRecipients.Count > 0,
-        "Enabled notifications require Provider=Smtp, SmtpHost, FromAddress and both recipient lists.").ValidateOnStart();
+        && !string.IsNullOrWhiteSpace(o.NotificationAddress),
+        "Enabled email notifications require ResendApiKey, FromAddress and NotificationAddress.").ValidateOnStart();
 
 /* --------------------------------------------------------------- database */
 
@@ -250,12 +248,15 @@ builder.Services.AddSingleton<IContentVersion, ContentVersion>();
 /*
  * Lead notifications.
  *
- * No delivery provider is wired up in this build, so the sender writes to the
- * application log and reports honestly that nothing was transmitted. Replacing
- * INotificationSender is the whole job of adding real email later; nothing else
- * changes. See Services/NotificationService.cs.
+ * Resend is isolated behind INotificationSender. Tests replace that seam and
+ * never make a real provider call.
  */
-builder.Services.AddScoped<INotificationSender>(sp => sp.GetRequiredService<IOptions<NotificationOptions>>().Value is { Enabled: true, Provider: var p } && p.Equals("Smtp", StringComparison.OrdinalIgnoreCase) ? ActivatorUtilities.CreateInstance<SmtpNotificationSender>(sp) : ActivatorUtilities.CreateInstance<LoggingNotificationSender>(sp));
+builder.Services.AddHttpClient<INotificationSender, ResendNotificationSender>((sp, client) =>
+{
+    var options = sp.GetRequiredService<IOptions<EmailNotificationOptions>>().Value;
+    client.BaseAddress = new Uri("https://api.resend.com/");
+    client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+});
 builder.Services.AddScoped<IEstimateRequestNotifier, EstimateRequestNotifier>();
 builder.Services.AddScoped<IEmploymentInterestNotifier, EmploymentInterestNotifier>();
 builder.Services.AddScoped<IBookingRequestNotifier, BookingRequestNotifier>();

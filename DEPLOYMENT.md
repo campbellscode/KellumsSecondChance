@@ -15,14 +15,12 @@ never in committed JSON or the React bundle.
 - `Production__BingSiteVerification` — optional public Bing Webmaster verification token
 - `MediaStorage__RootPath` — durable upload directory outside the publish tree
 - `AntiSpam__IpHashSalt` — unique secret value
-- `Notifications__Enabled=true`
-- `Notifications__Provider=Smtp`
-- `Notifications__SmtpHost`, `SmtpPort`, `SmtpUseTls`
-- `Notifications__SmtpUsername` and `SmtpPassword` when required
-- `Notifications__FromAddress`, `FromDisplayName`
-- `Notifications__EstimateRequestRecipients__0`
-- `Notifications__EmploymentInterestRecipients__0`
-- `Notifications__AdminBaseUrl` — normally the same origin as `Production__SiteUrl`
+- `EmailNotifications__Enabled=true`
+- `EmailNotifications__FromName=Kellum's Second Chance Renovations`
+- `EmailNotifications__FromAddress` — sender on a domain verified in Resend
+- `EmailNotifications__NotificationAddress` — business inbox for all three forms
+- `EmailNotifications__ResendApiKey` — secret; configure only in IIS/environment settings
+- `EmailNotifications__AdminBaseUrl` — normally the same origin as `Production__SiteUrl`
 
 Runtime business values remain CMS-owned rather than deployment secrets. In
 `/admin/site-settings`, confirm the public business name and enter only verified
