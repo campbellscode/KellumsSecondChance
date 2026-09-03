@@ -24,13 +24,37 @@ public class KellumsApiFactory : WebApplicationFactory<Program>
     protected virtual string AppEnvironment => Environments.Development;
     protected virtual string? ProductionSiteUrl => "https://kellumssecondchance.com";
 
+    /// <summary>
+    /// Satisfies the startup connection-string check. It is NEVER used to open a
+    /// connection: ConfigureServices below replaces the DbContext with SQLite
+    /// before any provider resolves it.
+    /// </summary>
+    private const string UnusedConnectionString =
+        "Server=(local);Database=unused;Trusted_Connection=True;TrustServerCertificate=True";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment(AppEnvironment);
 
+        /*
+         * Supply the connection string in EVERY environment, not just Production.
+         *
+         * Program.cs fails fast when ConnectionStrings:KellumsDatabase is absent
+         * and there is deliberately no fallback, so without this the Development
+         * host would depend on the developer's User Secrets and the whole suite
+         * would fail on a machine that has none (CI, or a fresh clone).
+         *
+         * It must be UseSetting, not ConfigureAppConfiguration: Program.cs reads
+         * the connection string eagerly while the builder is being constructed,
+         * which is before ConfigureAppConfiguration callbacks are applied.
+         *
+         * The value is never used to open a connection — ConfigureServices below
+         * replaces the DbContext with SQLite before any provider resolves it.
+         */
+        builder.UseSetting("ConnectionStrings:KellumsDatabase", UnusedConnectionString);
+
         if (AppEnvironment == Environments.Production)
         {
-            builder.UseSetting("ConnectionStrings:KellumsDatabase", "Server=(local);Database=unused;Trusted_Connection=True;TrustServerCertificate=True");
             if (ProductionSiteUrl is not null)
                 builder.UseSetting("Production:SiteUrl", ProductionSiteUrl);
             builder.UseSetting("Production:DataProtectionKeyPath", Path.Combine(Path.GetTempPath(), "kellums-test-keys"));
@@ -39,7 +63,7 @@ public class KellumsApiFactory : WebApplicationFactory<Program>
                 var settings = new Dictionary<string, string?>
                 {
                     ["Production:DataProtectionKeyPath"] = Path.Combine(Path.GetTempPath(), "kellums-test-keys"),
-                    ["ConnectionStrings:KellumsDatabase"] = "Server=(local);Database=unused;Trusted_Connection=True;TrustServerCertificate=True",
+                    ["ConnectionStrings:KellumsDatabase"] = UnusedConnectionString,
                 };
                 if (ProductionSiteUrl is not null)
                     settings["Production:SiteUrl"] = ProductionSiteUrl;

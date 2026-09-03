@@ -7,7 +7,9 @@ never in committed JSON or the React bundle.
 ## Required configuration
 
 - `ASPNETCORE_ENVIRONMENT=Production`
-- `ConnectionStrings__KellumsDatabase`
+- `ConnectionStrings__KellumsDatabase` — must target the `KSC-Prod` database. There
+  is no fallback: startup fails if this is missing. Development uses User Secrets
+  and targets `KSC-Dev`; the two never share a value.
 - `Production__SiteUrl` — authoritative public HTTPS origin
 - `Production__DataProtectionKeyPath` — durable directory outside the publish tree
 - `Production__DataProtectionApplicationName=KellumsSecondChance`

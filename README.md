@@ -32,12 +32,42 @@ no CORS, and no API base URL in the client bundle.
 
 ### 1. Database
 
-A connection string is **not committed**. Development falls back to LocalDB.
-For anything else, set it out of band:
+**No connection string is committed, and there is no fallback in any
+environment.** The application reads `ConnectionStrings:KellumsDatabase` and
+refuses to start without it — a missing setting fails loudly at startup rather
+than quietly writing to the wrong database.
+
+| Environment | Supplied by | Database |
+| --- | --- | --- |
+| Development | ASP.NET Core User Secrets, key `ConnectionStrings:KellumsDatabase` | `KSC-Dev` |
+| Production | Environment variable `ConnectionStrings__KellumsDatabase` | `KSC-Prod` |
+
+Set the development value once per machine. Credentials never enter the
+repository:
 
 ```bash
-dotnet user-secrets set "ConnectionStrings:KellumsDatabase" "<your connection string>" --project KellumsSecondChance.Server
+dotnet user-secrets set "ConnectionStrings:KellumsDatabase" "Server=72.167.143.178;Database=KSC-Dev;User Id=<USER>;Password=<PASSWORD>;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True;" --project KellumsSecondChance.Server
 ```
+
+`dotnet user-secrets list --project KellumsSecondChance.Server` shows what is
+already stored. The same secrets file holds the seed administrator account, so
+edit rather than overwrite it:
+
+```json
+{
+  "ConnectionStrings": {
+    "KellumsDatabase": "Server=72.167.143.178;Database=KSC-Dev;User Id=<USER>;Password=<PASSWORD>;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True;"
+  },
+  "Seed": {
+    "AdminEmail": "you@example.com",
+    "AdminPassword": "<a strong password>"
+  }
+}
+```
+
+Because there is no fallback, `dotnet ef` also needs the secret configured — it
+builds the same host. That is the intended trade: no credentials in source, and
+no way to run against an unintended database by accident.
 
 Apply the schema. **This has deliberately not been run for you.**
 
@@ -242,7 +272,7 @@ dotnet test
 
 | Key | Purpose |
 | --- | --- |
-| `ConnectionStrings:KellumsDatabase` | SQL Server connection. Never commit with credentials. |
+| `ConnectionStrings:KellumsDatabase` | SQL Server connection. **Required — no fallback.** Development: User Secrets, targeting `KSC-Dev`. Production: the environment variable `ConnectionStrings__KellumsDatabase`, targeting `KSC-Prod`. Never committed. |
 | `Business:*` | Fallbacks only. The `SiteSettings` table — written by `/admin/site-settings` — takes precedence. |
 | `MediaStorage:RootPath` | Where uploaded project photographs are written. Empty means `wwwroot/uploads`. Point it outside the deployment folder to survive a redeploy. |
 | `MediaStorage:PublicPathPrefix` | URL prefix the media root is served from. Default `uploads`. |
